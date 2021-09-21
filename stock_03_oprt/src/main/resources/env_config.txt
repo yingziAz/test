@@ -1,0 +1,6 @@
+devMode = true
+testMode = false
+
+## 开发环境设置：  devMode = true  testMode 不限
+## 测试环境设置：  devMode = false  testMode=true
+## 生产环境设置：  devMode = false  testMode=false

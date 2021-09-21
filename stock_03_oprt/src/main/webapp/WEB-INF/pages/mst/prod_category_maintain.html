@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} |  商品分类管理</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+</head>
+<body class="animsition">
+<#include "../include/page-header.html"/>
+<#include "../include/page-sidebar-wrapper.html"/>
+<@admoprt_menu type="F_O_BASE_DATA_SETTING" action=""></@admoprt_menu>
+<div class="page">
+	<div class="page-header">
+		<h1 class="page-title">商品分类</h1>
+		<ol class="breadcrumb">
+			<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+		</ol>
+	</div>
+	<div class="page-content container-fluid">
+		<div class="panel">
+			<#include "../include/common_warning.ftl" />
+			<div class="panel-body p-10">
+				<table id="dataTable" 
+					data-toggle="table" 
+					data-data-field="list" 
+					data-buttons-class="default"
+					data-method="post" 
+					data-url="${ctx}/mst/prod/category/list" 
+					data-side-pagination="server" 
+					data-pagination="true" 
+					data-search="true" 
+					data-striped="true"
+					data-adv-search="false" 
+					data-query-params="queryAdvParams"
+					data-content-type="application/x-www-form-urlencoded"
+					data-mobile-responsive="true"
+					data-toolbar = "#toolbar"
+					data-show-refresh="true"
+					data-show-columns="true"
+					data-page-size="20"
+					data-page-list="[10, 20, 50, 100]"
+					<#if (cond.keyword!'') != ''>
+					data-search-text="${cond.keyword!''}"
+					</#if>
+					<#if (cond.pageNo!-1) !=-1>
+					data-page-number = ${cond.pageNo!0}
+					</#if>
+					<#if (cond.orderField!'') != '' && (cond.orderDir!'') !=''>
+					data-sort-name = "${cond.orderField!''}"
+					data-sort-order = "${cond.orderDir!''}"
+					</#if>
+					
+					data-cookie="true"
+					data-cookie-id-table="prod_category_maintain"
+					data-cookie-expire="1m"
+					data-cookies-enabled="bs.table.columns"
+				>
+					<thead>
+						<tr>
+							<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+							<th data-field="father_category_name" data-sortable="true" data-align="center"> 一级分类</th>
+							<th data-field="child_category_name" data-sortable="true" data-align="center"> 二级分类</th>
+							<!-- <th data-field="order_num" data-sortable="true" data-align="center">排序</th> -->
+							<th data-width="320px" data-align="left" data-field="action" data-formatter="actionFormatter" data-events="actionEvents">操作</th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- TABLE CONTENT END -->
+<!-- Site Action -->
+<div class="site-action">
+	<a href="${ctx}/mst/prod/category/edit" onclick="modal(event,this)">
+		<button type="button" class="site-action-toggle btn-raised btn btn-success btn-floating">
+			<i class="front-icon wb-plus animation-scale-up" aria-hidden="true"></i>
+		</button>
+	</a>
+</div>
+<!-- End Site Action -->
+<!-- Footer -->
+<#include "../include/page-footer.html"/>
+<#include "../include/page-js-plugins.html"/>
+<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_190611"></script>
+<script type="text/javascript">
+	var $dataTable = $('#dataTable');
+	$(document).ready(function() {
+		//弹框初始化
+		registerAlertify4Local();
+	});
+
+	function serialNumGen(value, row, index) {
+		return index + 1;
+	}
+
+	//高级查询
+	function queryAdvParams(options) {
+		return jQuery.extend(options, {
+		});
+	}
+	
+	function actionFormatter(value, row, index){
+		var _add = '';
+		var _delete = '';
+		var _edit = '';
+		
+		if(isNullOrUndefined(row.child_id)){
+			_add = '<a class="btn btn-xs btn-link text-primary" onclick="modal(event,this)" href="${ctx}/mst/prod/category/edit?parentId='+row.father_id+'">添加子分类</a>'
+			_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/mst/prod/category/edit?id='+row.father_id+'" onclick="modal(event,this)">编辑</a>'
+			_delete = '<a class="btn btn-xs btn-link text-danger" href="javascript:void(0);" onclick="_delete(\''+row.father_id+'\',\''+row.father_category_name+'\',\'father\')">删除</a>'
+		}else{
+			_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/mst/prod/category/edit?id='+row.child_id+'" onclick="modal(event,this)">编辑</a>'
+			_delete = '<a class="btn btn-xs btn-link text-danger" href="javascript:void(0);" onclick="_delete(\''+row.child_id+'\',\''+row.child_category_name+'\',\'child\')">删除</a>'
+		}
+		return  _add +_edit + _delete;
+	}
+	
+	function _delete(id,categoryName,level){
+		var num;
+		var msg;
+		$.ajax({
+			type: "post",
+			url: "${ctx}/mst/prod/category/getChildNum",
+			data: {"father_id":id},
+			async: false,
+			dataType: "json",
+			success: function(result){
+				num = result.num;
+				if(level == 'father' && num > 0){
+					alertify.alert('一级分类下已存在<span class="badge badge-info">'+num+'</span>个二级分类，不能被删除！', function(){});
+				}else{
+					alertify.confirm("确认删除分类【"+categoryName+"】吗?操作不可逆", function () {
+						$.ajax({
+							type: "post",
+							url: "${ctx}/mst/prod/category/delete",
+							data: {"id":id},
+							dataType: "json",
+							success: function(result){
+								if(result.state=="ok"){
+									alertify.success("删除成功");
+									$dataTable.bootstrapTable('refresh');
+								}else{
+									resultErr(result);
+								}
+							}
+						});
+					}, function () {
+					});
+				}
+			}
+		});
+	}
+</script>
+</body>
+</html>

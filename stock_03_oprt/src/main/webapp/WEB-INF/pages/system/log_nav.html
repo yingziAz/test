@@ -1,0 +1,11 @@
+<ul class="nav nav-tabs nav-tabs-line pt-5">
+	<li class="nav-item">
+		<a class="nav-link <#if (nav_active!'') == 'log'>active</#if>" href="${ctx}/system/log">操作日志</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link <#if (nav_active!'') == 'batch_job'>active</#if>" href="${ctx}/system/batchLog">跑批任务日志</a>
+	</li>
+	<li class="nav-item">
+		<a class="nav-link <#if (nav_active!'') == 'exception'>active</#if>" href="${ctx}/system/exception/log">程序异常日志 </a>
+	</li>
+</ul>

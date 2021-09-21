@@ -1,0 +1,48 @@
+<link rel="stylesheet" type="text/css" href="${ctx}/assets/plugin/webuploader/webuploder.css">
+<link rel="stylesheet" type="text/css" href="${ctx}/assets/vendor/webuploader/webuploader.css">
+<script type="text/javascript">
+	var ctx = "${ctx}", attachField = "${attachField!''}", attachDivId = "${attachDivId!''}",fileType="${fileType!'a'}",attachNum="${attachNum!1}",position="${position!'m'}";
+</script>
+<div class="modal-dialog modal-simple">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title">大文件上传</h4>
+		</div>
+		<div class="modal-body">
+			<p>您可以尝试文件拖拽，使用QQ截屏工具，然后激活窗口后粘贴，或者点击添加文件按钮。</p>
+			<div id="uploader">
+				<div class="queueList">
+					<div id="dndArea" class="placeholder">
+						<div id="filePicker"></div>
+						<p>或将文件拖到这里，单次最多可选1个文件。</p>
+					</div>
+				</div>
+				<div class="statusBar" style="display: none;">
+					<div class="progress">
+						<span class="text">0%</span> <span class="percentage"></span>
+					</div>
+					<div class="info"></div>
+					<div class="btns">
+						<div id="filePicker2"></div>
+						<div class="uploadBtn">开始上传</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script src="${ctx}/assets/vendor/webuploader/webuploader.min.js"></script>
+<script src="${ctx}/assets/plugin/webuploader/webuploder_large_files.js?v=1.0.4"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#largeFileUploadModal').on('hidden.bs.modal', function (e) {
+		//清除modal内容
+		$("#largeFileUploadModal").remove();
+		
+		if($("div").hasClass("modal") && $("div").hasClass("show") && !$("body").hasClass("modal-open")){
+			$("body").addClass("modal-open");
+		}
+	})
+});
+</script>

@@ -1,0 +1,148 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<div class="modal-dialog modal-simple">
+<form class="form-horizontal" method="post" role="form" id="dataForm">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title">
+				${entity.logTypeStr!}<#if entity.id??>编辑<#else>新增</#if>&nbsp;&nbsp;
+				<small>${prod.product_name!}（${prod.product_no}）</small>
+			</h4>
+		</div>
+		<div class="modal-body">
+			<!-- 防止重复提交TOKEN  begin-->
+			${token!''}
+			<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+			<input type="hidden" name="entity.id" value="${entity.id!''}" />
+			<input type="hidden" name="entity.prodId" value="${entity.prodId!''}" />
+			<input type="hidden" name="entity.logType" value="${entity.logType!''}" />
+			<div class="form-group row">
+				<label class="col-sm-2 form-control-label" for="name">数量：
+				</label>
+				<div class="col-sm-9">
+					<div class="input-group">
+						<input type="text"  class="form-control" name="entity.quantity" value="${entity.quantity!''}">
+						<span class="input-group-addon">${prod.stockUnit!'-'}</span>
+					</div>
+					<span class="text-help">请填写整数，如1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-sm-2 form-control-label" for="name">价格：
+				</label>
+				<div class="col-sm-9">
+					<div class="input-group">
+						<input type="text"  class="form-control" name="entity.price" value="${entity.price!''}" maxlength="12">
+						<span class="input-group-addon">${prod.priceUnit!'-'}</span>
+					</div>
+					<span class="text-help">请填写数字，如1或者1.1</span>	
+					<span class="text-help">价格会实时更新为商品入库/出库价格</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-sm-2 form-control-label" for="name">备注：
+				</label>
+				<div class="col-sm-9">
+					<textarea class="form-control" name="entity.description">${entity.description!''}</textarea>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-sm-2 form-control-label" for="name">附件：</label>
+				<div class="col-sm-9 row" id="attachDiv">
+					<#include "../include/attach_disp.ftl"/>
+					<@attach_disp attaches=stockAttach! attachField='attachId' attachDivId='attachDiv' attachNum=20 fileType='a' position='m' readonly=false
+					></@attach_disp>
+				</div>
+				<div class="col-sm-9 offset-sm-2">
+					<input type="hidden" value="${entity.stockAttachs!}" id="attachId" name="entity.stockAttachs"  />
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer text-left">
+			<button class="btn btn-primary" type="submit" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+			<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">取 消</a>
+		</div>
+	</div>
+</form>
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		registerDataFormValidate();
+		registerAlertify4Local();
+		$('#ajaxModal').on('hidden.bs.modal', function (e) {
+			//清除modal内容
+			$("#ajaxModal").remove();
+		})
+
+	});
+
+	//提交信息验证
+	function registerDataFormValidate() {
+		$('#dataForm').formValidation({
+			framework : "bootstrap4",
+			button : {
+				selector : '#btnSubmit',
+				disabled : 'disabled'
+			},
+			icon : null,
+			fields : {
+				"entity.quantity" : {
+					validators : {
+						notEmpty : {
+							message : '请输入入库/出库数量'
+						}
+					}
+				}
+			},
+			err : {
+				clazz : 'invalid-feedback'
+			},
+			control : {
+				valid : 'is-valid',
+				invalid : 'is-invalid'
+			},
+			row : {
+				invalid : 'has-danger'
+			},
+			success:{
+				
+			}
+		}).on('success.form.fv',function(e){
+			e.preventDefault();
+			var $form = $(e.target),
+				fv = $(e.target).data('formValidation');
+			$.ajax({
+				url :"${ctx}/prod/stock/log/saveOrUpdate",
+				type : 'POST',
+				data : $form.serialize(),
+				dataType : "json",
+				success: function(result){
+					e.stopPropagation();
+					if(result.state == "ok"){
+						alertify.success("保存成功");
+						setTimeout(function(){
+							//关闭当前弹出框
+							$('#ajaxModal').modal('hide');
+							parent.$('#dataTable').bootstrapTable('refresh');
+							
+							if (typeof refreshView === "function") { // 是函数 其中 FunName 为函数名称
+								//刷新详情页
+								refreshView();
+							}
+						},1000)
+				}else{
+					
+					$("#btnSubmit").removeClass("disabled");
+					$("#btnSubmit").removeAttr("disabled");
+					//加入token问题
+					if(result.formToken){
+						$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+					}
+					resultErr(result);
+				}
+				}
+			});
+		});
+	}
+</script>

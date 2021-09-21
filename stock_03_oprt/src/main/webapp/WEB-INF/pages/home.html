@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 首页</title>
+<#include "./include/page-header-meta.html"/>
+<#include "./include/page-header-common-css.html"/>
+<!-- 图表插件 -->
+<link rel="stylesheet" href="${ctx}/assets/vendor/chartist/chartist.css" />
+<!-- 日期插件 -->
+<link rel="stylesheet" href="${ctx}/assets/vendor/bootstrap-datepicker/bootstrap-datepicker.min.css?v=v1.5.1">
+<style>
+</style>
+</head>
+<body class="animsition dashboard">
+<#include "./include/page-header.html"/>
+<#include "./include/page-sidebar-wrapper.html"/>
+<@admoprt_menu type="home" action=""></@admoprt_menu>
+<div class="page">
+	<div class="page-header">
+		<h1 class="page-title">首页</h1>
+	</div>
+	<div class="page-content container-fluid">
+		<div class="row">
+			<div class="col-12">
+				<div class="panel panel-transparent" style="margin-bottom:0px;">
+					<div class="panel-body p-0">
+						<div class="row">
+							<div class="col-md-4">
+								<div class="card p-10 flex-row justify-content-between">
+									<div class="white">
+										<i class="icon icon-circle icon-2x wb-clipboard bg-blue-600" aria-hidden="true"></i>
+									</div>
+									<div class="counter counter-md counter text-right">
+										<div class="counter-number-group">
+											<span class="counter-number">
+											${record.prodNum!0}
+											</span> 
+											<span class="counter-number-related text-capitalize">个</span>
+										</div>
+										<div class="counter-label text-capitalize font-size-16">有效商品数</div>
+									</div>
+								</div>
+							</div>
+							<div class="col-md-4">
+								<div class="card p-10 flex-row justify-content-between">
+									<div class="white">
+										<i class="icon icon-circle icon-2x wb-hammer bg-red-600" aria-hidden="true"></i>
+									</div>
+									<div class="counter counter-md counter text-right">
+										<div class="counter-number-group">
+											<span class="counter-number">${record.exceptionNum!0}</span> 
+											<span class="counter-number-related text-capitalize">条</span>
+										</div>
+										<div class="counter-label text-capitalize font-size-16">系统异常日志</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Footer -->
+<#include "./include/page-footer.html"/>	
+<#include "./include/page-js-plugins.html"/>
+<!-- 日期插件 -->
+<script src="${ctx}/assets/vendor/bootstrap-datepicker/bootstrap-datepicker.js?v=v1.7.1"></script>
+<script src="${ctx}/assets/vendor/bootstrap-datepicker/bootstrap-datepicker.zh-CN.min.js?v=v1.7.1"></script>
+<script src="${ctx}/assets/plugin/echarts/3.8.5/echarts.min.js?v=3.8.3"></script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		//设置日期格式 
+		$('.input-daterange').datepicker({
+			format: 'yyyy-mm-dd',
+			language: 'zh-CN',
+			autoclose:true
+		}).on('changeDate', function(ev) {
+			if($(ev.target).hasClass("startDate")){
+				$(".startDate").val(ev.format());
+			}
+			if($(ev.target).hasClass("endDate")){
+				$(".endDate").val(ev.format());
+			}
+		});
+		renderChartData();
+		$(".tab-content .active").removeClass("active");
+// 		window.onresize = function(){
+//			自适应  使用会导致后面几个变形
+// 			browseTrendChart.resize();
+// 			buyerTrendChart.resize();
+// 			orderNumTrendChart.resize();
+// 			orderAmountTrendChart.resize();
+// 			productTrendChart.resize();
+// 			sellerTrendChart.resize();
+// 		}
+		
+	});
+	
+// 	//tab点击事件
+	$(document.body).on("click", "a[data-toggle]", function(event) {
+// 		var tabId = this.getAttribute("href");
+// 		browseTrendChart.resize();
+// 		buyerTrendChart.resize();
+// 		orderNumTrendChart.resize();
+// 		orderAmountTrendChart.resize();
+// 		productTrendChart.resize();
+// 		sellerTrendChart.resize();
+	});
+	
+	
+	function _filter(filterVal,_this){
+		$("#filterVal").val(filterVal);
+		$(".form-group .btn-outline").removeClass("active");
+		$(_this).siblings().removeClass("active");
+		$("."+filterVal).addClass("active");
+		
+		if(filterVal == 'UD'){
+			$(".advanceDateRangeDiv").show();
+			return false;
+		}else{
+			$(".advanceDateRangeDiv").hide();
+		}
+		renderChartData();
+	}
+	
+	
+</script>
+</body>
+</html>

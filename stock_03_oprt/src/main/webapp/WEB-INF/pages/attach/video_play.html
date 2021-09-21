@@ -1,0 +1,33 @@
+<style>
+.modal_wrapper {display: table;height: 100%;margin: 0px auto;margin-top: 20px;}
+</style>
+<div class="modal-dialog modal-lg modal_wrapper">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title">${attach.file_name!}</h4>
+		</div>
+		<div class="modal-body">
+			<#if (type!1)==2>
+				<video src="${ctx}/attach/download?id=${attach.id!}"  controls="controls"></video>
+			<#else>
+				<video src="${attach.fullUrl!}"  controls="controls"></video>
+			</#if>
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+
+$(document).ready(function() {
+	$('#videoPlayModal').on('hidden.bs.modal', function (e) {
+		//清除modal内容
+		$("#videoPlayModal").remove();
+		
+		if($("div").hasClass("modal") && $("div").hasClass("show") && !$("body").hasClass("modal-open")){
+			$("body").addClass("modal-open");
+		}
+		
+	})
+});
+
+</script>

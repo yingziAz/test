@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 账户<#if entity.id??>编辑<#else>新增</#if></title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<link rel="stylesheet" href="${ctx}/assets/vendor/jstree/jstree.css?v=v1.0.0">
+</head>
+<body class="animsition dashboard">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_SYSTEM" action="P_O_ACCOUNT_MAG"></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">
+				账户
+				<#if entity.id??>编辑<#else>新增</#if>
+			</h1>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+				<li class="breadcrumb-item">系统管理</li>
+				<li class="breadcrumb-item active"><a href="${ctx}/system/account">账户管理</a></li>
+			</ol>
+			<div class="page-header-actions">
+				<a class="btn btn-sm btn-inverse btn-round" href="${ctx}/system/account?from=edit"> <i class="icon wb-reply" aria-hidden="true"></i> <span
+					class="hidden-sm-down">返回</span>
+				</a>
+			</div>
+		</div>
+		<div class="page-content container-fluid">
+			<div class="row">
+				<div class="col-lg-12 col-md-12">
+					<div class="panel">
+						<div class="panel-heading">
+							<h2 class="panel-title">账户信息</h2>
+						</div>
+						<div class="panel-body">
+							<form class="form-horizontal" id="dataForm" autocomplete="off">
+								<!-- 防止重复提交TOKEN  begin-->
+								${token!''} <input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+								<!-- 防止重复提交TOKEN  end-->
+								<input type="hidden" name="entity.id" class="form-control" value="${entity.id!}" /> 
+								<input type="hidden" name="entity.userType" class="form-control" value="2" />
+								<input type="hidden" id="empId" name="entity.empId" value="${entity.empId!}" />
+								<!-- 选中的客户单位集  -->
+								<input type="hidden" id="cmpGroupStatId" name="cmpGroupStatId" value="${cmpGroupStatId!}" />
+								<!-- 用户类型 -->
+								<!-- <input type="hidden" name="entity.userType" class="form-control" value="${entity.userType!}" /> -->
+								<div class="form-group row">
+									<label class="col-md-3 form-control-label">用户名： <span class="required" style="color: red;">*</span>
+									</label>
+									<div class="col-md-5">
+										<input type="text" class="form-control" name="entity.userName" value="${entity.userName!''}" placeholder="请输入用户名" />
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-md-3 form-control-label">姓名： <span class="required" style="color: red;">*</span>
+									</label>
+									<div class="col-md-5">
+										<input type="text" class="form-control" name="entity.userRealName" value="${entity.userRealName!''}" placeholder="请输入真实姓名" />
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-md-3 form-control-label">手机号码：
+									</label>
+									<div class="col-md-5">
+										<input type="text" class="form-control" name="entity.userMobile" value="${entity.userMobile!''}" placeholder="请输入手机号码"/>
+									</div>
+								</div>
+								<#if (oprtRoleDisplayFlg!'N')=='Y'>
+								<div class="form-group row">
+									<label class="col-md-3 form-control-label">角色： <span class="required" style="color: red;">*</span>
+									</label>
+									<div class="col-md-5">
+										<#if roleList??> 
+											<#list roleList as role>
+												<div class="checkbox-custom checkbox-primary checkbox-inline col-sm-5" style="margin-left: 0px">
+													<input type="checkbox" id="role_${role.id}" name="userRoleId" value="${role.id}" /> <label for="role_${role.id}">${role.role_name!''}</label>
+												</div>
+											</#list> 
+										</#if>
+									</div>
+								</div>
+								</#if>
+								<div class="form-group row">
+									<label class="col-md-3 form-control-label">备注：</label>
+									<div class="col-md-5">
+										<textarea class="form-control" name="entity.description" rows="5" placeholder="请输入备注">${entity.description!''}</textarea>
+									</div>
+								</div>
+								<div class="col-md-5 text-right ">
+									<button type="submit" id="btnSubmit" class="btn btn-primary">
+										<i class="fa fa-save"></i> 保存
+									</button>
+									<button type="reset" class="btn btn-default">重 置</button>
+								</div>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+	<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+	
+	<script src="${ctx}/assets/vendor/jstree/jstree.min.js?v=v3.3.4"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function(){
+			registerDataFormValidate();
+			registerAlertify4Local();
+			//初始化选中
+			registerCheckbox4Check();
+		});
+
+		//提交信息验证
+		function registerDataFormValidate() {
+			$('#dataForm').formValidation({
+				framework : "bootstrap4",
+				button : {
+					selector : '#btnSubmit',
+					disabled : 'disabled'
+				},
+				icon : null,
+				fields : {
+					"entity.userName" : {
+						validators : {
+							notEmpty : {
+								message : '请输入用户名'
+							}
+						}
+					},
+					"entity.userRealName" : {
+						validators : {
+							notEmpty : {
+								message : '请输入真实姓名'
+							}
+						}
+					},
+ 					"entity.userMobile" : {
+ 						validators : {
+ 							notEmpty : {
+								message : '请输入手机号码'
+							},
+							phone : {
+								country : 'CN',
+								message : '请输入有效手机号'
+							},
+							stringLength:{
+								message : '最大长度为11位数',
+								max: 11
+							}
+						}
+					},
+					"userRoleId" : {
+						validators : {
+							notEmpty : {
+								message : '请输入角色'
+							}
+						}
+					},
+					"userTypeId":{
+						validators : {
+							notEmpty : {
+								message : '请选择用户类型'
+							}
+						}
+					}
+				},
+				err : {
+					clazz : 'invalid-feedback'
+				},
+				control : {
+					valid : 'is-valid',
+					invalid : 'is-invalid'
+				},
+				row : {
+					invalid : 'has-danger'
+				},
+				success:{
+					
+				}
+			}).on('success.form.fv',function(e){
+				e.preventDefault();
+				var $form = $(e.target),
+					fv = $(e.target).data('formValidation');
+				
+				var ajaxSubmit = function(){
+					$.ajax({
+						url :"${ctx}/system/account/saveOrUpdate",
+						type : 'POST',
+						data : $form.serialize(),
+						dataType : "json",
+						success: function(result){
+							if(result.state == "ok"){
+								alertify.success(result.data);
+								setTimeout(function(){
+									goBack();
+								},1000);
+							}else{
+								//加入token问题
+								if(result.formToken){
+									$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+								}
+								resultErr(result);
+							}
+						}
+					});
+				}
+				ajaxSubmit();
+			});
+		}
+		
+		//对checkbox进行选中
+		function registerCheckbox4Check(){
+			<#if entity.id??>
+			$.ajax({
+				url : "${ctx}/system/account/userRole?userId=${entity.id!''}",
+				type : 'POST',
+				dataType : "json",
+				success : function(result) {
+					if(!isNullOrUndefined(result)){
+						for(var i=0;i<result.length;i++){
+							$("input[name='userRoleId']:checkbox").each(function () {
+								if($(this).val() == result[i].roleId){
+									$(this).attr("checked","checked");
+								}
+							});
+						}
+					}
+				}
+			});
+			</#if>
+		}
+		
+		//返回
+		function goBack(){
+			location.href = "${ctx}/system/account"
+		}
+
+		</script>
+</body>
+</html>

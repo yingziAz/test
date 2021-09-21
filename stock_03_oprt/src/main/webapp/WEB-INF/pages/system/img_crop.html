@@ -1,0 +1,158 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/cropper/cropper.css">
+<style>
+.modal_wrapper {
+	display: table;
+	height: 100%;
+	margin: 0px auto;
+	margin-top: 20px;
+}
+</style>
+<div class="modal-dialog modal-lg modal_wrapper">
+	<div class="modal-content" id="imgCropModalContent">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title">裁剪</h4>
+		</div>
+		<div class="modal-body">
+		
+			<div class="cropper text-center" id="exampleFullCropper">
+				<img src="${ctx}/attach/download?attachId=${attachId!''}" id="cropedImage" alt="...">
+			</div>
+			<div id="cropCanvasField" style="display:none;"></div>
+			
+			<div class="btn-group btn-block row" style="margin-top:20px">
+				<button class="btn btn-primary col-md-6" onclick="saveCrop()"
+					data-toggle="tooltip" data-placement="top" title="您可以调整裁切框，系统将按裁切框内的内容进行裁切上传。">
+						<i class="fa fa-save"></i> 保存剪裁图</button>
+				<button class="btn btn-default btn-outline col-md-6" onclick="closeModal('imgCropModal')"
+					data-toggle="tooltip" data-placement="top" title="系统将上传您的原始尺寸图片，不进行任何裁切。">
+					<i class="fa fa-close"></i> 取消裁剪 </button>
+			</div>
+			
+		</div>
+		<div class="modal-footer text-left">
+		</div>
+	</div>
+</div>
+<script src="${ctx}/assets/vendor/cropper/cropper.min.js"></script>
+<script src="${ctx}/assets/vendor/cropper/image-cropping.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#imgCropModal').on('hidden.bs.modal', function (e) {
+		$("#imgCropModal").remove();
+		
+		//防止父弹框无法滚动
+		if($("div").hasClass("modal") && $("div").hasClass("show") && !$("body").hasClass("modal-open")){
+			$("body").addClass("modal-open");
+		}
+	})
+	
+	
+	cropInit();
+	
+	findDimensions();
+	$("#imgCropModalContent").width(winWidth*0.9);
+// 	$("#imgCropModalContent").height(winHeight-20-20);
+// 	$("#cropedImage").height(winHeight - 160)
+});
+
+var corpAttachId = "${attachId!}";	
+
+function cropInit(){
+	var $exampleFullCropper = $("#exampleFullCropper :eq(0)");
+	
+	//通过拖拽来移动剪裁框
+	var _cropBoxResizable = false;
+	//通过移动鼠标来放大图像
+	var _zoomOnWheel = false;
+	//通过移动鼠标来放大图像
+	var img_crop_width = 400;
+	//通过移动鼠标来放大图像
+	var img_crop_height = 300;
+	
+	<#if options??>
+		var options = '${options!''}';
+		if(!isNullOrUndefined(options)){
+			options = JSON.parse('${options!''}');
+			if(!isNullOrUndefined(options.cropBoxResizable)){
+				_cropBoxResizable = options.cropBoxResizable;
+			}
+			if(!isNullOrUndefined(options.zoomOnWheel)){
+				_zoomOnWheel = options.zoomOnWheel;
+			}
+		}
+	</#if>
+	<#if otherOptions??>
+	var otherOptions = '${otherOptions!''}';
+	if(!isNullOrUndefined(otherOptions)){
+		otherOptions = JSON.parse('${otherOptions!''}');
+		if(!isNullOrUndefined(otherOptions.width)){
+			img_crop_width = otherOptions.width;
+		}
+		if(!isNullOrUndefined(otherOptions.height)){
+			img_crop_height = otherOptions.height;
+		}
+	}
+	</#if>
+	
+	if(isNullOrUndefined(corpAttachId)){
+		alertify.alert("获取图片失败");
+		return;
+	}
+	
+	var options = {
+		viewMode: 1,
+		preview: "#exampleFullCropperPreview > .img-preview",
+		responsive: true,
+		dragMode : 'move',
+		cropBoxResizable : _cropBoxResizable,
+		zoomOnWheel : _zoomOnWheel,
+		ready: function () {
+           $exampleFullCropper.cropper('crop');
+           $exampleFullCropper.cropper('setData', {
+               width: parseInt(img_crop_width),
+               height: parseInt(img_crop_height)
+           });
+    	},
+		crop: function crop(e) {
+		}
+	}
+	$exampleFullCropper.cropper(options);
+		
+
+	
+}
+
+function saveCrop(){
+	var $exampleFullCropper = $("#exampleFullCropper :eq(0)");
+	var result = $exampleFullCropper.cropper('getCroppedCanvas', {});
+	$("#cropCanvasField").html(result);
+	var canvas = $("#cropCanvasField").find('canvas')[0];
+	var base64Data = canvas.toDataURL("image/jpeg");
+	$.ajax({
+		type: "post",
+		url: "${ctx}/img/crop/uploadCropedImg",
+		data: { "attachId" : "${attachId!''}", "base64Str" : base64Data },
+		dataType: "json",
+		success: function(result){
+			if(result.state == "ok"){
+// 				if(typeof(parent.imgCropComplete) === 'function'){
+// 					var timestamp = (new Date()).valueOf();
+// 					imgCropComplete();
+// 				}
+				imgCropUpdate();
+				closeModal('imgCropModal');
+			}else{
+				closeModal('imgCropModal');
+			}
+		}
+	});
+}
+
+function imgCropUpdate(){
+	var downloadUrl = "${ctx}/attach/download?attachId=" + corpAttachId + "&timestamp=" + (new Date()).valueOf();
+	$("#attachDiv_" + corpAttachId + " .gallery-items").attr('src', downloadUrl);
+	$("#attachDiv_" + corpAttachId + " .gallery-items").attr('data-high-res-src', downloadUrl);
+}
+
+</script>

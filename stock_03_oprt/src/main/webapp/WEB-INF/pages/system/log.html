@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 运营操作日志</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+</head>
+<body class="animsition app-projects">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_SYS_LOG" action=""></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">操作日志</h1>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+				<li class="breadcrumb-item">平台日志</li>
+			</ol>
+		</div>
+		
+		<div class="page-content container-fluid">
+			<div class="panel">
+				<#include "./log_nav.html" />
+				<div class="panel-body p-10">
+					<table id="dataTable"
+						data-toggle="table" 
+						data-data-field="list" 
+						data-method="post" 
+						data-url="${ctx}/system/log/list"
+						data-pagination="true" 
+						data-striped="true"
+						data-adv-search="false" 
+						data-query-params="queryAdvParams"
+						data-content-type="application/x-www-form-urlencoded"
+						data-mobile-responsive="true"
+						data-toolbar = "#toolbar"
+						data-search="true" 
+						data-side-pagination="server" 
+						data-show-refresh="true"
+						data-show-columns="true"
+						data-sort-name="logTime4Str"
+						data-sort-order="desc"
+						data-page-size = "20"
+						data-page-list = "[20, 50, 100]"
+						data-cookie="true"
+						data-cookie-id-table="log"
+						data-cookie-expire="1m"
+						data-cookies-enabled="bs.table.columns"
+						>
+						<thead>
+							<tr>
+								<th data-width="40px" data-formatter="serialNumGen" data-align="center">#</th>
+								<th data-width="160px" data-field="executive" data-sortable="true">用户</th>
+								<th data-width="180px" data-field="ip" data-sortable="true">用户操作IP</th>
+								<th data-field="action" data-sortable="true">操作描述</th>
+								<th data-width="180px" data-field="logTime4Str" data-sortable="true" data-align="center">操作时间</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_190611"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function() {
+	
+		});
+		function serialNumGen(value, row, index) {
+			return index + 1;
+		}
+		//高级查询
+		function queryAdvParams(options) {
+			return jQuery.extend(options, {
+			});
+		}
+	</script>
+</body>
+</html>

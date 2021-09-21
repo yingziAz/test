@@ -1,0 +1,19 @@
+<#macro stat_menu action>
+<@compress>
+	<div id="menu" class="clearfix">
+		<#if (menus?? && (menus?size-1)>0)>
+			<#assign menuSize=menus?size-1 />
+			<#assign loopL=(menuSize/6)?ceiling >
+			<#list 1..loopL as i>
+			<ul>
+				<#list menus as menu>
+					<#if action != menu.id && (menu_index gte (i-1)*6) && (menu_index lt i*6)>
+						<li><a href="${ctx}/${menu.menu_action!''}">${menu.menu_name}</a></li>
+					</#if>
+				</#list>
+			</ul>
+			</#list>
+		</#if>
+	</div>
+</@compress>
+</#macro>

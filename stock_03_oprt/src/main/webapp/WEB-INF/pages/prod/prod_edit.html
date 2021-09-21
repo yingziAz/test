@@ -1,0 +1,244 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<div class="modal-dialog modal-simple">
+<form class="form-horizontal" method="post" role="form" id="dataForm">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title"><#if entity.id??>编辑<#else>新增</#if></h4>
+		</div>
+		<div class="modal-body">
+			<!-- 防止重复提交TOKEN  begin-->
+			${token!''}
+			<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+			<input type="hidden" name="entity.id" value="${entity.id!''}" />
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">一级分类：
+				</label>
+				<div class="col-md-8">
+					<select class="form-control" id="categoryL1Id" name="entity.categoryL1Id">
+						<#list categoryList as _catL1>
+						<option value="${_catL1.id!''}"
+							<#if (entity.categoryL1Id!0) == _catL1.id>selected="selected"</#if>>
+							${_catL1.category_name!''}
+						</option>
+						</#list>
+					</select>
+				</div>
+			</div>
+			<div id="categoryL2IdDiv">
+				
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">商品编号：
+				</label>
+				<div class="col-md-8">
+					<input type="text"  class="form-control" name="entity.productNo" readonly value="${entity.productNo!''}" >
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">商品名称：
+				</label>
+				<div class="col-md-8">
+					<input type="text"  class="form-control" name="entity.productName" value="${entity.productName!''}" maxlength="256">
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">入库价格：
+				</label>
+				<div class="col-md-8">
+					<input type="text"  class="form-control" name="entity.price" value="${entity.price!''}" maxlength="12">
+					<span class="text-help">请填写数字，如1或者1.1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">出库价格：
+				</label>
+				<div class="col-md-8">
+					<input type="text"  class="form-control" name="entity.outPrice" value="${entity.outPrice!''}" maxlength="12">
+					<span class="text-help">请填写数字，如1或者1.1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">价格单位：
+				</label>
+				<div class="col-md-8">
+					<input type="text"  class="form-control" name="entity.priceUnit" value="${entity.priceUnit!''}" maxlength="12">
+					<span class="text-help">请填写文字 如 元/千克</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">数量单位：
+				</label>
+				<div class="col-md-8">
+					<input type="text"  class="form-control" name="entity.stockUnit" value="${entity.stockUnit!''}" maxlength="12">
+					<span class="text-help">请填写最小单位，如千克</span>	
+					<span class="text-help">库存数量只能为整数</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">商品描述：
+				</label>
+				<div class="col-md-8">
+					<textarea class="form-control" name="entity.productDesc">${entity.productDesc!''}</textarea>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">商品图片：</label>
+				<div class="col-sm-8 row" id="imageAttachDiv">
+					<#include "../include/attach_disp.ftl"/>
+					<@attach_disp attaches=prodImages! attachField='productImages' attachDivId='imageAttachDiv' attachNum=20 fileType='a' position='m' readonly=false
+					></@attach_disp>
+				</div>
+				<div class="col-sm-9 offset-sm-2">
+					<input type="hidden" value="${entity.productImages!}" id="productImages" name="entity.productImages"  />
+				</div>
+			</div>
+			
+<!-- 			<div class="form-group row"> -->
+<!-- 				<label class="col-md-3 form-control-label" for="name">排序： -->
+<!-- 					<span class="required" style="color: red;">*</span> -->
+<!-- 				</label> -->
+<!-- 				<div class="col-md-8"> -->
+<!-- 					<input type="text" class="form-control" name="entity.orderNum" placeholder="请输入序号" value="${entity.orderNum!''}"/> -->
+<!-- 				</div> -->
+<!-- 			</div> -->
+				
+			</div>
+			<div class="modal-footer text-left">
+				<button class="btn btn-primary" type="submit" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+				<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">取 消</a>
+			</div>
+		</div>
+	</form>
+</div>
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		registerDataFormValidate();
+		registerAlertify4Local();
+		$('#ajaxModal').on('hidden.bs.modal', function (e) {
+			//清除modal内容
+			$("#ajaxModal").remove();
+		})
+		getByParentId("${entity.categoryL1Id!}","${entity.categoryL2Id!}");
+		$("#categoryL1Id").bind("change",function () {
+			getByParentId(this.value,null);
+		});
+
+	});
+	
+	function getByParentId(fatherId,childId){
+		$.ajax({
+			type: "post",
+			url: "${ctx}/mst/prod/category/getChild",
+			data: {"father_id":fatherId},
+			dataType: "json",
+			success: function(result){
+				if(result.state=="ok"){
+					var data = result.data;
+					if(isNullOrUndefined(data)){
+						$("#categoryL2IdDiv").html("");
+						return;
+					}
+					var _str='<div class="form-group row">';
+					_str+='		<label class="col-md-3 form-control-label" for="name">二级分类：</label>';
+					_str+='		<div class="col-md-8">';
+					_str+='			<select class="form-control" id="categoryL2Id" name="entity.categoryL2Id" >';
+					for(var i=0;i<data.length;i++){
+						var entity=data[i];
+						var selected="";
+						if(childId==entity.id){
+							selected='selected="selected"';
+						}
+						_str+='<option value="'+entity.id+'" '+selected+'>'+entity.category_name+'</option>';
+					}
+					_str+='			</select>';
+					_str+='		</div>';
+					_str+='	</div>';
+					$("#categoryL2IdDiv").html(_str);
+				}else{
+					resultErr(result);
+				}
+			}
+		});
+	}
+
+	//提交信息验证
+	function registerDataFormValidate() {
+		$('#dataForm').formValidation({
+			framework : "bootstrap4",
+			button : {
+				selector : '#btnSubmit',
+				disabled : 'disabled'
+			},
+			icon : null,
+			fields : {
+				"entity.productName" : {
+					validators : {
+						notEmpty : {
+							message : '请输入商品名称'
+						}
+					}
+				},
+// 				"entity.orderNum" : {
+// 					validators : {
+// 						notEmpty : {
+// 							message : '请输入序号'
+// 						},
+// 						digits : {
+// 							message : '排序只能为整数'
+// 						},
+// 						stringLength:{
+// 							message : '最大长度为4',
+// 							max: 4
+// 						}
+// 					}
+// 				}
+			},
+			err : {
+				clazz : 'invalid-feedback'
+			},
+			control : {
+				valid : 'is-valid',
+				invalid : 'is-invalid'
+			},
+			row : {
+				invalid : 'has-danger'
+			},
+			success:{
+				
+			}
+		}).on('success.form.fv',function(e){
+			e.preventDefault();
+			var $form = $(e.target),
+				fv = $(e.target).data('formValidation');
+			$.ajax({
+				url :"${ctx}/prod/saveOrUpdate",
+				type : 'POST',
+				data : $form.serialize(),
+				dataType : "json",
+				success: function(result){
+					e.stopPropagation();
+					if(result.state == "ok"){
+						alertify.success("保存成功");
+						setTimeout(function(){
+						//关闭当前弹出框
+						$('#ajaxModal').modal('hide');
+						parent.$('#dataTable').bootstrapTable('refresh');
+					},1000)
+				}else{
+					
+					$("#btnSubmit").removeClass("disabled");
+					$("#btnSubmit").removeAttr("disabled");
+					//加入token问题
+					if(result.formToken){
+						$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+					}
+					resultErr(result);
+				}
+				}
+			});
+		});
+	}
+</script>

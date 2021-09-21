@@ -1,0 +1,158 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<link href="${ctx}/assets/vendor/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=v0.8.1" rel="stylesheet" type="text/css" />
+<div class="modal-dialog modal-simple">
+	<form class="form-horizontal" method="post" role="form" id="dataForm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" aria-hidden="true" id="btnClose" data-dismiss="modal">×</button>
+				<h4 class="modal-title">平台版本<#if entity.id??>编辑<#else>新增</#if></h4>
+			</div>
+			<div class="alert alert-warning alert-dismissible" role="alert" style="margin-bottom:0">
+				<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+				重要提示 : 升级内容，平台显示换行效果，需要用||分割。
+			</div>
+			<div class="modal-body">
+				<!-- 防止重复提交TOKEN  begin-->
+				${token!''}
+				<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+				<input type="hidden" name="entity.id" value="${entity.id!''}" />
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">版本：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<input type="text" value="${entity.version!''}" class="form-control" name="entity.version" placeholder="请输入版本" maxlength="40"/>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">发布时间：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<div class="input-group">
+							<span class="input-group-addon">
+								<span class="wb-time"></span>
+							</span>
+							<input type="text" id="releaseDate" class="form-control datetime" data-autoclose="true" name="entity.releaseDate" value="${entity.releaseDate!''}">
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">升级内容：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<textarea class="form-control" name="entity.content" placeholder="请输入该版本的升级内容" rows="6" maxlength="2000">${entity.content!''}</textarea>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-primary" type="submit" id="btnSubmit"> <i class="fa fa-save"></i> 保存</button>
+				<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">取消</a>
+			</div>
+		</div>
+	</form>
+</div>
+
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js?v=v0.8.1" type="text/javascript"></script>
+<script src="${ctx}/assets/vendor/bootstrap-datetimepicker/locales/bootstrap-datetimepicker.zh-CN.js?v=v0.8.1" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	registerDataFormValidate();
+	registerAlertify4Local();
+	$('#ajaxModal').on('hidden.bs.modal', function (e) {
+		//清除modal内容
+		$("#ajaxModal").remove();
+	})
+	//设置日期格式
+	$(".datetime").datetimepicker({
+		language: 'zh-CN',
+		format: 'yyyy-mm-dd hh:ii',
+		autoclose: true,
+		minView:0
+	}).on('changeDate',function(ev){
+		$("#releaseDate").trigger("change");
+	});
+	$('.datetime').datetimepicker('setStartDate',new Date());
+	
+});
+
+//提交信息验证
+function registerDataFormValidate() {
+	$('#dataForm').formValidation({
+		framework : "bootstrap4",
+		excluded: [],
+		button : {
+			selector : '#btnSubmit',
+			disabled : 'disabled'
+		},
+		icon : null,
+		fields : {
+ 			"entity.version" : {
+				validators : {
+					notEmpty : {
+						message : '请输入版本'
+					}
+				}
+			},
+ 			"entity.releaseDate" : {
+ 				trigger:"change",
+				validators : {
+					notEmpty : {
+						message : '请选择发布时间'
+					}
+				}
+			},
+ 			"entity.content" : {
+				validators : {
+					notEmpty : {
+						message : '请输入升级内容'
+					}
+				}
+			},
+		},
+		err : {
+			clazz : 'invalid-feedback'
+		},
+		control : {
+			valid : 'is-valid',
+			invalid : 'is-invalid'
+		},
+		row : {
+			invalid : 'has-danger'
+		}
+	}).on('success.form.fv',function(e){
+		e.preventDefault();
+		var $form = $(e.target),
+			fv = $(e.target).data('formValidation');
+		$.ajax({
+			url :"${ctx}/system/platform/version/saveOrUpdate",
+			type : 'POST',
+			data : $form.serialize(),
+			dataType : "json",
+			success: function(result){
+				e.stopPropagation();
+				if(result.state == "ok"){
+					alertify.success("保存成功");
+					setTimeout(function(){
+					 	closeModal('ajaxModal');
+					 	parent.$('#dataTable').bootstrapTable('refresh'); 
+					},1000)
+				}else{
+					//加入token问题
+					if(result.formToken){
+						$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+					}
+					resultErr(result);
+				}
+			}
+		});
+	});
+}
+</script>

@@ -1,0 +1,36 @@
+<#macro admoprt_menu type action>
+<@compress>
+<div class="site-menubar site-menubar-light">
+	<div class="site-menubar-body">
+		<ul class="site-menu" data-plugin="menu">
+			<li
+				<#if type=="home" >class="site-menu-item has-sub active open"<#else> class="site-menu-item has-sub" </#if> > 
+				<a href="${ctx}/home"> <i class="site-menu-icon glyphicon glyphicon-home" aria-hidden="true"></i> 
+					<span class="site-menu-title">首页</span>
+			</a></li>
+			<#if (session.menus?? && session.menus?size>0)> 
+				<#list session.menus as menuLv1>
+					<li
+						<#if type==menuLv1.menuId>class="site-menu-item has-sub active open" <#else>class="site-menu-item has-sub" </#if> > 
+						<a <#if (menuLv1.menuAction!'') != ''>href="${ctx}/${menuLv1.menuAction!}" <#else>href="javascript:void(0)" </#if>> <i class="site-menu-icon ${menuLv1.menuIcon!}" aria-hidden="true"></i> 
+							<span class="site-menu-title">${menuLv1.menuName!}</span>
+						</a> 
+						<#if (menuLv1.children?? && menuLv1.children?size>0)>
+							<ul class="site-menu-sub">
+								<#list menuLv1.children as menuLv2>
+									<li<#if action==menuLv2.menuId> class="site-menu-item active" <#else> class="site-menu-item" </#if> >
+										<a class="animsition-link" href="${ctx}/${menuLv2.menuAction!}"> 
+											<span class="site-menu-title">${menuLv2.menuName!}</span>
+										</a>
+									</li>
+								</#list>
+							</ul>
+						</#if>
+					</li>
+				</#list> 
+			</#if>
+		</ul>
+	</div>
+</div>
+</@compress>
+</#macro>

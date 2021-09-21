@@ -1,0 +1,303 @@
+Table: base_attach_file
+---------------------------+--------------+------+-----+---------+---------
+ Field                     | Type         | Null | Key | Default | Remarks 
+---------------------------+--------------+------+-----+---------+---------
+ id                        | CHAR(24)     | NO   | PRI |         |         
+ user_id                   | CHAR(24)     | YES  |     |         |         
+ folder_id                 | INT(10)      | YES  |     |         | 文件夹ID   
+ file_name                 | VARCHAR(100) | NO   |     |         | 文件名称    
+ file_suffix               | VARCHAR(32)  | NO   |     |         | 文件后缀名   
+ file_size                 | INT(10)      | NO   |     |         | 文件大小    
+ thumb_flg                 | CHAR(1)      | NO   |     |         | 是否有缩略图  
+ store_url                 | VARCHAR(128) | NO   |     |         | 文件保存路径  
+ thumb_url                 | VARCHAR(128) | YES  |     |         |         
+ qcloud_url                | VARCHAR(128) | YES  |     |         | 腾讯云URL  
+ qcloud_thumb_url          | VARCHAR(128) | YES  |     |         | 腾讯云缩略图URL
+ tags                      | CHAR(100)    | YES  |     |         | 文件标签id  
+ status                    | SMALLINT(5)  | NO   |     |         | 状态    1-有效   0-无效
+ attach_type               | SMALLINT(5)  | YES  |     |         | 附件类型    
+ file_md5                  | VARCHAR(100) | YES  |     |         | 文件MD5值  
+ create_date               | DATETIME(26) | NO   |     |         |         
+ attacht_type              | VARCHAR(255) | YES  |     |         |         
+ targeted_product_category | VARCHAR(255) | YES  |     |         |         
+---------------------------+--------------+------+-----+---------+---------
+
+Table: base_product	Remarks: 商品信息表
+----------------+----------------------+------+-----+---------+---------
+ Field          | Type                 | Null | Key | Default | Remarks 
+----------------+----------------------+------+-----+---------+---------
+ id             | CHAR(24)             | NO   | PRI |         |         
+ product_no     | CHAR(16)             | NO   |     |         | 商品编号    
+ product_name   | VARCHAR(256)         | NO   |     |         | 商品名称    
+ category_l1_id | INT(10)              | NO   |     |         | 商品一级分类  
+ category_l2_id | INT(10)              | YES  |     |         | 商品二级分类  
+ product_desc   | MEDIUMTEXT(16777215) | YES  |     |         | 商品描述    
+ product_images | TEXT(65535)          | YES  |     |         | 商品图片（最多9张），第一张作为头图
+ product_cover  | CHAR(24)             | YES  |     |         | 商品封面图   
+ color          | VARCHAR(256)         | YES  |     |         | 商品颜色    
+ specs          | VARCHAR(512)         | YES  |     |         | 规格      
+ price          | DECIMAL(12,2)        | YES  |     |         | 入库价格    
+ out_price      | DECIMAL(12,2)        | YES  |     |         | 出库价格    
+ total_profit   | DECIMAL(12,2)        | YES  |     |         | 总利润     
+ price_unit     | VARCHAR(50)          | YES  |     |         | 价格单位    
+ stock_unit     | VARCHAR(50)          | YES  |     |         | 数量单位    
+ order_num      | INT(10)              | YES  |     |         |         
+ valid_flg      | CHAR(1)              | NO   |     | Y       | 是否有效    
+ creator        | VARCHAR(50)          | NO   |     |         | 创建者     
+ create_date    | DATETIME(26)         | NO   |     |         | 创建时间    
+ updator        | VARCHAR(50)          | YES  |     |         | 更新者     
+ update_date    | DATETIME(26)         | YES  |     |         | 更新时间    
+----------------+----------------------+------+-----+---------+---------
+
+Table: biz_prod_deaily	Remarks: 商品每日数据
+-------------+---------------+------+-----+---------+---------
+ Field       | Type          | Null | Key | Default | Remarks 
+-------------+---------------+------+-----+---------+---------
+ id          | INT(10)       | NO   | PRI |         |         
+ prod_id     | CHAR(24)      | NO   |     |         | 商品id    
+ stock       | INT(10)       | NO   |     | 0       | 库存数量    
+ price       | DECIMAL(12,2) | NO   |     | 0.00    | 价格      
+ out_price   | DECIMAL(12,2) | NO   |     | 0.00    | 出库价格    
+ profit      | DECIMAL(12,2) | NO   |     | 0.00    | 当日利润    
+ deaily      | DATE(10)      | NO   |     |         | 日期      
+ creator     | VARCHAR(50)   | NO   |     |         | 创建者     
+ create_date | DATETIME(26)  | NO   |     |         | 创建时间    
+ updator     | VARCHAR(50)   | YES  |     |         | 更新者     
+ update_date | DATETIME(26)  | YES  |     |         | 更新时间    
+-------------+---------------+------+-----+---------+---------
+
+Table: biz_prod_stock	Remarks: 商品库存表
+-------------+--------------+------+-----+---------+---------
+ Field       | Type         | Null | Key | Default | Remarks 
+-------------+--------------+------+-----+---------+---------
+ id          | CHAR(24)     | NO   | PRI |         |         
+ prod_id     | CHAR(24)     | NO   |     |         |         
+ stock_num   | INT(10)      | NO   |     |         | 实际库存    
+ book_num    | INT(10)      | NO   |     |         | 线上库存    
+ sku_no      | VARCHAR(50)  | YES  |     |         | sku编号   
+ create_date | DATETIME(26) | NO   |     |         |         
+ creator     | VARCHAR(50)  | NO   |     |         |         
+ update_date | DATETIME(26) | YES  |     |         |         
+ updator     | VARCHAR(50)  | YES  |     |         |         
+-------------+--------------+------+-----+---------+---------
+
+Table: biz_prod_stock_log	Remarks: 库存日志表
+------------------+---------------+------+-----+---------+---------
+ Field            | Type          | Null | Key | Default | Remarks 
+------------------+---------------+------+-----+---------+---------
+ id               | INT(10)       | NO   | PRI |         |         
+ prod_id          | CHAR(24)      | NO   |     |         |         
+ prod_stock_id    | CHAR(24)      | NO   |     |         | 库存id    
+ log_type         | SMALLINT(5)   | NO   |     |         | 1-入库 2-出库 3-退货
+ quantity         | INT(10)       | YES  |     |         | 数量      
+ price            | DECIMAL(12,2) | YES  |     |         | 价格      
+ stock_attachs    | VARCHAR(1024) | YES  |     |         | 附件      
+ description      | VARCHAR(128)  | YES  |     |         |         
+ import_attach_id | CHAR(24)      | YES  |     |         | 导入表id   
+ update_date      | DATETIME(26)  | YES  |     |         |         
+ updator          | VARCHAR(50)   | YES  |     |         |         
+ create_date      | DATETIME(26)  | NO   |     |         |         
+ creator          | VARCHAR(50)   | NO   |     |         |         
+------------------+---------------+------+-----+---------+---------
+
+Table: mst_prod_category	Remarks: 商品分类定义信息表
+---------------+--------------+------+-----+---------+---------
+ Field         | Type         | Null | Key | Default | Remarks 
+---------------+--------------+------+-----+---------+---------
+ id            | INT(10)      | NO   | PRI |         |         
+ category_name | VARCHAR(20)  | NO   |     |         | 分类名称（中文）
+ order_num     | SMALLINT(5)  | YES  |     | 1       |         
+ valid_flg     | CHAR(1)      | NO   |     |         | Y-有效 ： N-无效
+ parent_id     | INT(10)      | YES  |     | 0       | 父分配     
+ create_date   | DATETIME(26) | NO   |     |         |         
+ creator       | VARCHAR(50)  | NO   |     |         |         
+ update_date   | DATETIME(26) | YES  |     |         |         
+ updator       | VARCHAR(50)  | YES  |     |         |         
+---------------+--------------+------+-----+---------+---------
+
+Table: sys_batch_job
+----------+---------------+------+-----+---------+---------
+ Field    | Type          | Null | Key | Default | Remarks 
+----------+---------------+------+-----+---------+---------
+ id       | INT(10)       | NO   | PRI |         |         
+ job_name | VARCHAR(24)   | NO   |     |         |         
+ job_desc | VARCHAR(1024) | NO   |     |         |         
+----------+---------------+------+-----+---------+---------
+
+Table: sys_batch_job_logger
+-----------------+--------------+------+-----+---------+---------
+ Field           | Type         | Null | Key | Default | Remarks 
+-----------------+--------------+------+-----+---------+---------
+ id              | INT(10)      | NO   | PRI |         |         
+ job_id          | INT(10)      | NO   |     |         |         
+ job_run_time    | DATETIME(26) | NO   |     |         |         
+ job_finish_time | DATETIME(26) | YES  |     |         |         
+ succ_flg        | CHAR(1)      | NO   |     |         |         
+ error_msg       | TEXT(65535)  | YES  |     |         |         
+-----------------+--------------+------+-----+---------+---------
+
+Table: sys_dict	Remarks: 系统字典表
+-----------+--------------+------+-----+---------+---------
+ Field     | Type         | Null | Key | Default | Remarks 
+-----------+--------------+------+-----+---------+---------
+ id        | INT(10)      | NO   | PRI |         |         
+ dict_code | VARCHAR(20)  | YES  |     |         |         
+ dict_name | VARCHAR(100) | NO   |     |         |         
+ order_num | INT(10)      | NO   |     |         | 排序      
+-----------+--------------+------+-----+---------+---------
+
+Table: sys_dict_enum	Remarks: 系统字典-enum
+------------+--------------+------+-----+---------+---------
+ Field      | Type         | Null | Key | Default | Remarks 
+------------+--------------+------+-----+---------+---------
+ id         | INT(10)      | NO   | PRI |         |         
+ dict_id    | INT(10)      | NO   |     |         |         
+ enum_value | VARCHAR(100) | NO   |     |         | 值       
+ enum_code  | VARCHAR(100) | YES  |     |         | code    
+ order_num  | INT(10)      | YES  |     |         |         
+------------+--------------+------+-----+---------+---------
+
+Table: sys_excel_import_log	Remarks: 导入记录
+----------------+--------------+------+-----+---------+---------
+ Field          | Type         | Null | Key | Default | Remarks 
+----------------+--------------+------+-----+---------+---------
+ id             | INT(10)      | NO   | PRI |         |         
+ seller_id      | CHAR(24)     | NO   |     |         |         
+ biz_type       | SMALLINT(5)  | NO   |     |         | 1-商品导入  2-库存单导入
+ importer       | CHAR(24)     | YES  |     |         | 导入人     
+ import_date    | DATETIME(26) | YES  |     |         | 导入时间    
+ import_file    | VARCHAR(150) | YES  |     |         | 文件名称    
+ import_records | INT(10)      | YES  |     |         | 导入条数    
+ attach_id      | CHAR(24)     | YES  |     |         |         
+ creator        | VARCHAR(50)  | YES  |     |         |         
+ create_date    | DATETIME(26) | YES  |     |         |         
+ updator        | VARCHAR(50)  | YES  |     |         |         
+ update_date    | DATETIME(26) | YES  |     |         |         
+----------------+--------------+------+-----+---------+---------
+
+Table: sys_exception_log	Remarks: 系统错误日志
+-------------+--------------+------+-----+---------+---------
+ Field       | Type         | Null | Key | Default | Remarks 
+-------------+--------------+------+-----+---------+---------
+ id          | INT(10)      | NO   | PRI |         |         
+ err_msg     | TEXT(65535)  | YES  |     |         | 错误内容    
+ err_time    | DATETIME(26) | NO   |     |         | 出错时间    
+ root_path   | VARCHAR(100) | NO   |     |         | 错误出现路径  
+ handle_flg  | CHAR(1)      | NO   |     | N       | 是否修复    
+ handle_desc | VARCHAR(500) | YES  |     |         | 处理备注（最好写明处理人）
+ handle_time | DATETIME(26) | YES  |     |         | 处理时间    
+-------------+--------------+------+-----+---------+---------
+
+Table: sys_global_config	Remarks: 全局参数表
+-------------+---------------+------+-----+---------+---------
+ Field       | Type          | Null | Key | Default | Remarks 
+-------------+---------------+------+-----+---------+---------
+ id          | INT(10)       | NO   | PRI |         |         
+ param_name  | VARCHAR(100)  | NO   |     |         |         
+ param_value | VARCHAR(128)  | NO   |     |         |         
+ param_desc  | VARCHAR(1024) | YES  |     |         |         
+ order_num   | INT(10)       | NO   |     |         |         
+ create_date | DATETIME(26)  | YES  |     |         |         
+ creator     | VARCHAR(50)   | YES  |     |         |         
+ update_date | DATETIME(26)  | YES  |     |         |         
+ updator     | VARCHAR(50)   | YES  |     |         |         
+-------------+---------------+------+-----+---------+---------
+
+Table: sys_log
+-----------+--------------+------+-----+---------+---------
+ Field     | Type         | Null | Key | Default | Remarks 
+-----------+--------------+------+-----+---------+---------
+ id        | INT(10)      | NO   | PRI |         |         
+ user_id   | CHAR(24)     | YES  |     |         |         
+ log_time  | DATETIME(26) | NO   |     |         |         
+ log_type  | SMALLINT(5)  | NO   |     |         | 日志类型1-运营端，2-业务系统端,3-客户自助端 4-员工自动端 5-APP端
+ executive | VARCHAR(50)  | NO   |     |         |         
+ ip        | VARCHAR(50)  | NO   |     |         |         
+ action    | TEXT(65535)  | NO   |     |         |         
+-----------+--------------+------+-----+---------+---------
+
+Table: sys_menu	Remarks: 系统菜单信息表
+---------------+--------------+------+-----+---------+---------
+ Field         | Type         | Null | Key | Default | Remarks 
+---------------+--------------+------+-----+---------+---------
+ id            | VARCHAR(50)  | NO   | PRI |         | 菜单ID    
+ platform_node | CHAR(1)      | NO   |     |         | O-运营端，S-业务系统端，C-企业自主服务端
+ menu_name     | VARCHAR(128) | NO   |     |         | 菜单名称    
+ menu_name_en  | VARCHAR(256) | YES  |     |         | 菜单名称-英文 
+ menu_icon     | VARCHAR(50)  | YES  |     |         | 菜单ICON  
+ father_id     | VARCHAR(32)  | YES  |     |         | 父菜单ID   
+ menu_action   | VARCHAR(128) | YES  |     |         | 调用控制层方法URL
+ node_flg      | CHAR(1)      | YES  |     |         | 是否为叶子节点:Y是  N：否
+ order_num     | TINYINT(3)   | YES  |     |         | 排序      
+ module        | SMALLINT(5)  | YES  |     |         | 1-PC ，2-APP
+ valid_flg     | CHAR(1)      | YES  |     |         | 是否有效，Y-N
+ create_date   | DATETIME(26) | YES  |     |         | 创建时间    
+ creator       | VARCHAR(50)  | YES  |     |         | 创建人     
+ update_date   | DATETIME(26) | YES  |     |         | 更新时间    
+ updator       | VARCHAR(50)  | YES  |     |         | 更新人     
+---------------+--------------+------+-----+---------+---------
+
+Table: sys_role
+--------------+---------------+------+-----+---------+---------
+ Field        | Type          | Null | Key | Default | Remarks 
+--------------+---------------+------+-----+---------+---------
+ id           | INT(10)       | NO   | PRI |         |         
+ role_name    | VARCHAR(100)  | NO   |     |         |         
+ description  | VARCHAR(1024) | YES  |     |         |         
+ order_num    | SMALLINT(5)   | NO   |     |         |         
+ module       | SMALLINT(5)   | YES  |     |         | 1-pc. 2-app
+ template_flg | CHAR(1)       | NO   |     | N       | 角色模板标记：Y，N.
+ valid_flg    | CHAR(1)       | NO   |     |         |         
+ create_date  | DATETIME(26)  | NO   |     |         |         
+ creator      | VARCHAR(50)   | NO   |     |         |         
+ update_date  | DATETIME(26)  | YES  |     |         |         
+ updator      | VARCHAR(50)   | YES  |     |         |         
+--------------+---------------+------+-----+---------+---------
+
+Table: sys_role_resource
+-------------+--------------+------+-----+---------+---------
+ Field       | Type         | Null | Key | Default | Remarks 
+-------------+--------------+------+-----+---------+---------
+ id          | INT(10)      | NO   | PRI |         | 权限ID    
+ role_id     | INT(10)      | NO   |     |         | 账号ID    
+ resource_id | VARCHAR(32)  | NO   |     |         | 使用菜单ID  
+ create_date | DATETIME(26) | YES  |     |         | 创建时间    
+ creator     | VARCHAR(50)  | YES  |     |         | 创建人     
+ update_date | DATETIME(26) | YES  |     |         | 更新时间    
+ updator     | VARCHAR(50)  | YES  |     |         | 更新人     
+-------------+--------------+------+-----+---------+---------
+
+Table: sys_user	Remarks: 运营平台账户登录信息表
+--------------------+--------------+------+-----+---------+---------
+ Field              | Type         | Null | Key | Default | Remarks 
+--------------------+--------------+------+-----+---------+---------
+ id                 | CHAR(24)     | NO   | PRI |         | UUID    
+ user_name          | VARCHAR(100) | NO   |     |         | 用户名,唯一性验证
+ user_real_name     | VARCHAR(100) | NO   |     |         | 姓名      
+ mobile_area        | INT(10)      | YES  |     |         | 号码归属地   
+ user_mobile        | VARCHAR(13)  | YES  |     |         | 手机号码    
+ pwd_salt           | CHAR(6)      | YES  |     |         | 密码盐     
+ user_password      | VARCHAR(256) | NO   |     |         | 密码      
+ user_type          | SMALLINT(5)  | YES  |     |         | 账户类型：1-运营管理员，2-运营用户  3-商家 4-买手
+ biz_id             | CHAR(24)     | YES  |     |         | 24 对应 商家，买手账号
+ description        | VARCHAR(256) | YES  |     |         | 备注      
+ valid_flg          | CHAR(1)      | YES  |     |         | Y-有效 ： N-无效
+ language           | SMALLINT(5)  | YES  |     |         | 客户使用语言  
+ open_id            | CHAR(32)     | YES  |     |         | 微信openId
+ lastest_login_ip   | VARCHAR(15)  | YES  |     |         |         
+ lastest_login_time | DATETIME(26) | YES  |     |         | 最近一次登录时间
+ creator            | VARCHAR(50)  | NO   |     |         |         
+ create_date        | DATETIME(26) | YES  |     |         |         
+ updator            | VARCHAR(50)  | YES  |     |         |         
+ update_date        | DATETIME(26) | YES  |     |         |         
+--------------------+--------------+------+-----+---------+---------
+
+Table: sys_user_role	Remarks: 用户权限表
+---------+----------+------+-----+---------+---------
+ Field   | Type     | Null | Key | Default | Remarks 
+---------+----------+------+-----+---------+---------
+ id      | INT(10)  | NO   | PRI |         |         
+ user_id | CHAR(32) | NO   |     |         |         
+ role_id | INT(10)  | NO   |     |         |         
+---------+----------+------+-----+---------+---------
+

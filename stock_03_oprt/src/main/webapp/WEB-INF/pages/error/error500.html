@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html class="no-js css-menubar" lang="en">
+	<head>
+	<title>${global.platform_name!''} | 500</title>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+	<!-- Stylesheets --> 
+	<link rel="stylesheet" href="${ctx}/assets/css/bootstrap.min.css?v=4.0.1" /> 
+	<link rel="stylesheet" href="${ctx}/assets/css/bootstrap-extend.min.css?v=4.0.1" /> 
+	<link rel="stylesheet" href="${ctx}/assets/css/page/site.min.css">
+	<!-- Plugins --> 
+	<link rel="stylesheet" href="${ctx}/assets/vendor/animsition/animsition.css" /> 
+	<link rel="stylesheet" href="${ctx}/assets/vendor/asscrollable/asScrollable.css" /> 
+	<link rel="stylesheet" href="${ctx}/assets/vendor/toastr/toastr.css?v=2.1.4" /> 
+	<link rel="stylesheet" href="${ctx}/assets/vendor/slidepanel/slidePanel.css" /> 
+	<link rel="stylesheet" href="${ctx}/assets/vendor/flag-icon-css/flag-icon.css" /> 
+	<!-- Fonts --> 
+	<link rel="stylesheet" href="${ctx}/assets/fonts/font-awesome/font-awesome.min.css?v=4.7.0" />
+	<link rel="stylesheet" href="${ctx}/assets/fonts/glyphicons/glyphicons.min.css?v=3.1.0" />
+	<link rel="stylesheet" href="${ctx}/assets/fonts/brand-icons/brand-icons.min.css?v=3.1.0" />
+	<link rel="stylesheet" href="${ctx}/assets/fonts/web-icons/web-icons.min.css" />
+	<link rel="stylesheet" type="text/css" href="${ctx}/assets/css/page/errors.css"/>
+	<!-- 每个页面必须要有 -->
+	<script src="${ctx}/assets/vendor/breakpoints/breakpoints.js?v=1.0.5"></script> 
+	<script type="text/javascript">
+	Breakpoints();
+	</script>
+	<script type="text/javascript">
+		 var ctx = '${ctx}';
+	</script>
+</head>
+<body class="animsition page-error page-error-505 layout-full">
+	<!-- Page -->
+	<div class="page vertical-align text-center" data-animsition-in="fade-in" data-animsition-out="fade-out">
+	<div class="page-content vertical-align-middle">
+	<header>
+		<h1 class="animation-slide-top">500</h1>
+		<p>遇到错误了，请返回！</p>
+	</header>
+	<p class="error-advise">你可以尝试以下操作：</p>
+	<a class="btn btn-primary btn-round" href="${ctx}/index">返回网站首页</a>
+	<footer class="page-copyright">
+			<p>技术支持 <a href="javascript:void('0')" target="_blank">上海麦际市场策划有限公司 </a></p>
+			<p>© ${(.now)?string("yyyy")}. ${global.hro_group_name!''}</p>
+		</footer>
+	</div>
+	</div>
+	<!-- End Page -->
+	<#include "../include/page-js-plugins.html"/>
+</body>
+</html>

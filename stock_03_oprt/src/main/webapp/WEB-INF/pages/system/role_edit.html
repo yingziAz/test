@@ -1,0 +1,220 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<link rel="stylesheet" href="${ctx}/assets/vendor/jstree/jstree.css?v=v1.0.0">
+	
+<div class="modal-dialog modal-simple">
+	<form class="form-horizontal" method="post" role="form" id="dataForm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+				<h4 class="modal-title"><#if entity.id??>编辑<#else>新增</#if>角色</h4>
+			</div>
+			<div class="modal-body">
+				<!-- 防止重复提交TOKENbegin-->
+				${token!''}
+				<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+				<input type="hidden" id="roleId" name="entity.id" value="${entity.id!''}" />
+				<div class="form-group">
+					<div class="row">
+						<div class="col-md-6">
+							<label class="form-control-label mb-10" for="name">角色名称：
+								<span class="required" style="color: red;">*</span>
+							</label>
+							<input type="text" value="${entity.roleName!''}" class="form-control" name="entity.roleName" placeholder="请输入参数名称"/>
+						</div>
+						<div class="col-md-6">
+							<label class="form-control-label mb-10" for="name">排序：
+								<span class="required" style="color: red;">*</span>
+							</label>
+							<input type="text" value="${entity.orderNum!''}" class="form-control" name="entity.orderNum" placeholder="请输入序号" />
+						</div>
+					</div>
+				</div>
+				
+				<div class="form-group">
+					<label class="form-control-label mb-10" for="name">备注：</label>
+					<textarea class="form-control mb-sm" name="entity.description" placeholder="请输入备注" rows="1" >${entity.description!''}</textarea>
+				</div>
+				<div class="form-group">
+					<label class="control-label">角色权限设置</label>
+					<div class="treeview-box">
+						<div class="treeview-tools clearfix">
+							<div class="btn-group btn-group-sm float-right mb-10" role="group">
+								<button type="button" class="btn btn-icon btn-outline btn-default btn-fold" onclick="openOrClose(1)">
+									<i class="icon wb-chevron-down"></i>
+								</button>
+								<button type="button" class="btn btn-icon btn-outline btn-default btn-fold" onclick="openOrClose(2)">
+									<i class="icon wb-chevron-up"></i>
+								</button>
+							</div>
+							<div class="float-left mb-10">
+								<div class="input-search">
+									<input type="text" class="form-control input-sm" id="roleSearch" placeholder="查询 ...">
+									<button class="input-search-btn">
+										<i class="icon wb-search" aria-hidden="true"></i>
+									</button>
+								</div>
+							</div>
+						</div>		
+						<div class="pagetree margin-top-10">
+							<div id="roleSetting" name="roleSetting" class="pagetree margin-top-10" style="position: relative;overflow: auto;width: auto;height: 240px;"></div>
+						</div>
+						
+						
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer text-left">
+				<button class="btn btn-primary" type="submit" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+				<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">取 消</a>
+			</div>
+		</div>
+	</form>
+</div>
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/jstree/jstree.min.js?v=v3.3.4"></script>
+<script type="text/javascript">
+
+$(document).ready(function() {
+	registerDataFormValidate();
+	registerAlertify4Local();
+	$('#ajaxModal').on('hidden.bs.modal', function (e) {
+		//清除modal内容
+		$("#ajaxModal").remove();
+	})
+});
+
+$('#roleSetting').jstree({
+	'plugins':["wholerow","checkbox"], 
+	'core' : {
+		"check_callback" : true, 
+		'data' : function (obj, callback) { 
+			var jsonstr="[]"; 
+			var jsonarray = eval('('+jsonstr+')');
+			$.ajax({ 
+				type: "GET", 
+				url:"/system/role/roleTreeview",
+				data:{"id":$("#roleId").val()},
+				dataType:"json", 
+				async: false, 
+				success:function(result) { 
+				var arrays= result.roleTreeview; 
+				for(var i=0 ; i<arrays.length; i++){ 
+					var arr = { 
+						"id":arrays[i].id, 
+						"parent":arrays[i].fatherId=="root"?"#":arrays[i].fatherId, 
+						"text":arrays[i].text,
+						"state":{"selected":arrays[i].states=="1"?true:false},
+						"icon":arrays[i].menuIcon
+					} 
+					jsonarray.push(arr); 
+				} 
+			} 
+	
+			}); 
+			callback.call(this, jsonarray); 
+		} 
+	}, 
+	'plugins': ['checkbox','search']
+});
+
+//查询
+var to = false;
+$('#roleSearch').keyup(function () {
+	if(to) {
+	clearTimeout(to); 
+	}
+	to = setTimeout(function () {
+		$('#roleSetting').jstree(true).search($('#roleSearch').val());
+	}, 250);
+}); 
+
+//全部展开或者收缩
+function openOrClose(flg){
+	if(flg==1){
+		$('#roleSetting').jstree().open_all();
+	}else{
+		$('#roleSetting').jstree().close_all();
+	}
+	
+}
+
+//提交信息验证
+function registerDataFormValidate() {
+	$('#dataForm').formValidation({
+		framework : "bootstrap4",
+		button : {
+			selector : '#btnSubmit',
+			disabled : 'disabled'
+		},
+		icon : null,
+		fields : {
+			"entity.roleName" : {
+				validators : {
+					notEmpty : {
+						message : '角色名称不为空'
+					}
+				}
+			},
+			"entity.orderNum" : {
+				validators : {
+					notEmpty : {
+						message : '排序不为空'
+					},
+					digits : {
+						message : '排序只能为整数'
+					},
+					stringLength:{
+						message : '最大长度为4位数',
+						max: 4
+					}
+				}
+			}
+		},
+		err : {
+			clazz : 'invalid-feedback'
+		},
+		control : {
+			valid : 'is-valid',
+			invalid : 'is-invalid'
+		},
+		row : {
+			invalid : 'has-danger'
+		}
+	}).on('success.form.fv',function(e){
+		e.preventDefault();
+		
+		var $form = $(e.target),
+			fv = $(e.target).data('formValidation');
+		var nodes = $("#roleSetting").jstree("get_checked");
+		
+		$.ajax({
+			url :"${ctx}/system/role/save",
+			type : 'POST',
+			data : $form.serialize()+'&'+$.param({'narrs':nodes.toString()}),
+			dataType : "json",
+			success: function(result){
+				if(result.state == "ok"){
+					alertify.success("保存成功");
+					setTimeout(function(){
+						//关闭当前弹出框
+						//loadFilterCond();
+						closeModal('ajaxModal');
+						parent.$('#dataTable').bootstrapTable('refresh');
+					},1000)
+				}else{
+					//加入token问题
+					if(result.formToken){
+						$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+					}
+					//重新验证
+					$("#btnSubmit").removeClass("disabled")
+					$("#btnSubmit").removeAttr("disabled")
+					resultErr(result);
+				}
+			}
+		});
+	});
+}
+
+</script>

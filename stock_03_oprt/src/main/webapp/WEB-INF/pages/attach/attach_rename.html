@@ -1,0 +1,115 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css">
+<div class="modal-dialog modal-simple">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal" onclick="renameModalClose()">×</button>
+			<h4 class="modal-title">重命名</h4>
+		</div>
+		<div class="modal-body">
+			<form class="form-horizontal" data-url="${ctx}/attach/maintain/update4Rename" id="attachRenameForm">
+				<input type="hidden" name="entity.id" value="${entity.id!}" />
+				<div class="form-group">
+					<label class="col-xs-3 control-label text-right" style="line-height: 30px;">文件名： </label>
+					<div class="col-xs-8">
+						<input type="text" name="entity.fileName" class="form-control" value="${entity.fileName!}" />
+					</div>
+				</div>
+				<div class="form-group">
+					<div class="col-xs-7 col-xs-offset-4">
+						<button class="btn btn-primary" type="submit">保 存</button>
+						<button class="btn btn-white" type="reset">重 置</button>
+					</div>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js"></script>
+<script src="${ctx}/assets/js/Plugin/toastr.js"></script>
+<script src="${ctx}/assets/vendor/toastr/toastr.js"></script>
+<script type="text/javascript">
+
+$(document).ready(function() {
+	editValid();
+});
+
+function renameModalClose(){
+	$("#renameModal").modal('hide');  //手动关闭
+	$("#renameModal").remove();//清除页面
+}
+
+//提交信息验证
+function editValid() {
+	$('#globalConfigForm').formValidation({
+		framework : "bootstrap4",
+		button : {
+			selector : '#btnSubmit',
+			disabled : 'disabled'
+		},
+		icon : null,
+		fields : {
+			"entity.fileName" : {
+				validators : {
+					notEmpty : {
+						message : '请填写新名称'
+					},
+					stringLength:{
+						message : '最多能输入100个字符',
+						max: 100
+					}
+				}
+			},
+			"entity.orderNum" : {
+				validators : {
+					notEmpty : {
+						message : '请输入序号'
+					}
+				}
+			}
+		},
+		err : {
+			clazz : 'invalid-feedback'
+		},
+		control : {
+			valid : 'is-valid',
+			invalid : 'is-invalid'
+		},
+		row : {
+			invalid : 'has-danger'
+		},
+		success:{
+			
+		}
+	}).on('success.form.fv',function(e){
+		e.preventDefault();
+		var $form = $(e.target),
+			fv = $(e.target).data('formValidation');
+			$.ajax({
+				url :"${ctx}/mst/coopMode/savaOrUpdate",
+				type : 'POST',
+				data : $form.serialize(),
+				dataType : "json",
+				success: function(result){
+					e.stopPropagation();
+					if(result.state == "ok"){
+						toastr.info('更新成功');
+		 						toastr.clear();
+						renameModalClose();
+						setTimeout(function(){
+							//关闭当前弹出框
+							$('#ajaxModal').modal('hide');
+							parent.$('#dataTable').bootstrapTable('refresh');
+						},1000)
+					}else{
+						//加入token问题
+						if(result.formToken){
+							$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+						}
+						toastr.info('更新失败');
+					}
+				}
+			});
+		});
+}
+</script>

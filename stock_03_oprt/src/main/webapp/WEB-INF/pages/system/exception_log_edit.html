@@ -1,0 +1,109 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<link rel="stylesheet" href="${ctx}/assets/vendor/toastr/toastr.css?v=v0.8.1">
+<div class="modal-dialog modal-simple">
+	<form class="form-horizontal" method="post" role="form" id="modalDataForm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" aria-hidden="true"
+					data-dismiss="modal">×</button>
+				<h4 class="modal-title">处理备注</h4>
+			</div>
+			<div class="modal-body" style="padding-bottom:  0px;">
+				<!-- 防止重复提交TOKEN  begin-->
+				${token!''} 
+				<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" /> 
+				<input type="hidden" name="entity.id" value="${entity.id!''}" />
+				<div class="form-group ">
+					<textarea rows="4" class="form-control" name="entity.handleDesc" maxlength="1024" placeholder="请输入处理备注">${entity.handleDesc!''}</textarea>
+				</div>
+			</div>
+			<div class="modal-footer text-left">
+				<button class="btn btn-primary" type="submit" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+				<a class="btn btn-sm btn-white" data-dismiss="modal"
+					href="javascript:void(0)">取消</a>
+			</div>
+		</div>
+	</form>
+</div>
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/toastr/toastr.js?v=v0.8.1"></script>
+<!-- 图片插件 -->
+<script src="${ctx}/assets/plugin/imageviewer/imageviewer.min.js?v=1.0"></script>
+<script type="text/javascript">
+	var $form = $('#modalDataForm');
+	$(document).ready(function() {
+		globalConfigValid();
+		registerAlertify4Local();
+		$('#ajaxModal').on('hidden.bs.modal', function(e) {
+			//清除modal内容
+			$("#ajaxModal").remove();
+		})
+	});
+	
+	//高级查询
+	function queryAdvParams(options) {
+		return jQuery.extend(options, {
+		});
+	}
+	
+	
+	//提交信息验证
+	function globalConfigValid() {
+		$('#modalDataForm').formValidation({
+			framework : "bootstrap4",
+			button : {
+				selector : '#btnSubmit',
+				disabled : 'disabled'
+			},
+			icon : null,
+			fields : {
+				"entity.handleDesc" : {
+					validators : {
+						
+					}
+				},
+			},
+			err : {
+				clazz : 'invalid-feedback'
+			},
+			control : {
+				valid : 'is-valid',
+				invalid : 'is-invalid'
+			},
+			row : {
+				invalid : 'has-danger'
+			},
+			success : {
+	
+			}
+		}).on('success.form.fv',function(e) {
+			e.preventDefault();
+			var $form = $(e.target), 
+				fv = $(e.target).data('formValidation');
+				$.ajax({
+					url : "${ctx}/system/exception/log/save",
+					type : 'POST',
+					data : $form.serialize(),
+					dataType : "json",
+					success : function(result) {
+						e.stopPropagation();
+						if (result.state == "ok") {
+							alertify.success(result.data);
+							setTimeout(function() {
+								//关闭当前弹出框
+								$('#ajaxModal').modal('hide');
+								parent.$('#dataTable').bootstrapTable('refresh');
+							}, 1000)
+						} else {
+							//加入token问题
+							if (result.formToken) {
+								$("input[name ='formToken"+ $("input[name ='formTokenSuffix']").val()+ "']").val(result.formToken);
+							}
+							resultErr(result);
+						}
+					}
+				});
+		});
+	}
+</script>

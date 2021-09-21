@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''}  | 平台参数</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<link rel="stylesheet" href="${ctx}/assets/vendor/switchery/switchery.min.css?v=v0.8.1">
+</head>
+<body class="animsition">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_SYSTEM_MAG" action="P_OPRT_ACCOUNT_MAG"></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">平台参数</h1>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+				<li class="breadcrumb-item">平台设置</li>
+			</ol>
+		</div>
+		<div class="page-content container-fluid">
+			<#include "./platform_set_nav.html"/>
+			<form id="dataForm" method="post" role="form" class="form-horizontal" >
+				${token!''}
+				<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+				<!-- 防止重复提交TOKEN  begin-->
+				<div class="row mt-10">
+					<div class="col-xxl-4 col-lg-6">
+						<div class="panel">
+							<div class="panel-heading mb-10">
+								<h4 class="panel-title">基础参数</h4>
+							</div>
+							<div class="panel-body p-10 ">
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">默认登录密码：</label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control" name="param.DEFAULT_PASSWORD" placeholder=""  value="${data.DEFAULT_PASSWORD!''}" />
+										<span class="text-help">设置系统账号默认密码，请设置较为复杂的密码，避免设置：123456,111111 等安全系数较低的密码。</span>
+									</div>
+								</div>
+								<!-- 
+								<#if global.dev_mode>
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">角色菜单：</label>
+									<div class="col-sm-8">
+										<input type="hidden" name="param.OPRT_ROLE_DISPLAY_FLG"  id="oprt_role"  value="${data.OPRT_ROLE_DISPLAY_FLG!'N'}" />
+										<input type="checkbox" class="js-switch"/>
+										<span class="text-help">是否开启角色菜单。</span>
+									</div>
+								</div>
+								</#if>
+								 -->
+								<div class="form-group row">
+									<div class="offset-sm-4 col-sm-8">
+										<button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="col-xxl-4 col-lg-6">
+						<div class="panel">
+							<div class="panel-heading mb-10">
+								<h4 class="panel-title">VIP买家关联参数</h4>
+							</div>
+							<div class="panel-body p-10 ">
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">升级平台VIP条件一：</label>
+									<div class="col-sm-8">
+										<div class="input-group">
+											<span class="input-group-addon">满足</span>
+											<input type="text" class="form-control" name="param.UPGRADE_PVIP_SELLER_VIP_NUM" placeholder=""  value="${data.UPGRADE_PVIP_SELLER_VIP_NUM!''}" />
+											<span class="input-group-addon">个商家，自动升级平台VIP。</span>
+										</div>
+										<span class="text-help">如买家已被N(设定)个商家标记为商家VIP，则自动升级为平台VIP。</span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="offset-sm-4 col-sm-8">
+										<button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xxl-4 col-lg-6">
+						<div class="panel">
+							<div class="panel-heading mb-10">
+								<h4 class="panel-title">售后天数</h4>
+							</div>
+							<div class="panel-body p-10 ">
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">售后天数：</label>
+									<div class="col-sm-8">
+										<div class="input-group">
+											<span class="input-group-addon">订单完成，</span>
+											<input type="text" class="form-control" name="param.FINISH_ORDER_UN_SERVICE" placeholder=""  value="${data.FINISH_ORDER_UN_SERVICE!''}" />
+											<span class="input-group-addon">天后，订单不能再申请售后。</span>
+										</div>
+										<span class="text-help">订单完成后，不能进行售后天数。</span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="offset-sm-4 col-sm-8">
+										<button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xxl-4 col-lg-6">
+						<div class="panel">
+							<div class="panel-heading mb-10">
+								<h4 class="panel-title">积分规则</h4>
+							</div>
+							<div class="panel-body p-10 ">
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">积分规则：</label>
+									<div class="col-sm-8">
+										<div class="input-group">
+											<span class="input-group-addon">积分=</span>
+											<input type="text" class="form-control" name="param.INTEGRAL_RULE" placeholder=""  value="${data.INTEGRAL_RULE!''}" />
+											<span class="input-group-addon">*（订单支付金额-退款金额）。</span>
+										</div>
+										<span class="text-help">订单不能进行售后后，积分=（订单支付金额-退款金额）*积分规则。</span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="offset-sm-4 col-sm-8">
+										<button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xxl-4 col-lg-6">
+						<div class="panel">
+							<div class="panel-heading mb-10">
+								<h4 class="panel-title">国际化开关</h4>
+							</div>
+							<div class="panel-body p-10 ">
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">国际化：</label>
+									<div class="col-sm-8">
+										<div class="input-group">
+											<input type="text" class="form-control" name="param.INTERNATIONALIZE" placeholder=""  value="${data.INTERNATIONALIZE!''}" />
+										</div>
+										<span class="text-help">Y：开放国际化，N：关闭国际化<br>&nbsp;</span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="offset-sm-4 col-sm-8">
+										<button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-xxl-4 col-lg-6">
+						<div class="panel">
+							<div class="panel-heading mb-10">
+								<h4 class="panel-title">积分、积分商城开关</h4>
+							</div>
+							<div class="panel-body p-10 ">
+								<div class="form-group row">
+									<label class="col-sm-4 control-label text-right">积分、积分商城：</label>
+									<div class="col-sm-8">
+										<div class="input-group">
+											<input type="text" class="form-control" name="param.INTEGRAL_FLG" placeholder=""  value="${data.INTEGRAL_FLG!''}" />
+										</div>
+										<span class="text-help">Y：开放积分、积分商城，N：关闭积分、积分商城<br>&nbsp;不管开启关闭，后台都会计算积分</span>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="offset-sm-4 col-sm-8">
+										<button type="submit" class="btn btn-primary" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+				</div>
+			</form>
+		</div>
+	</div>
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+	<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+	<script src="${ctx}/assets/vendor/switchery/switchery.min.js?v=v0.1.1"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function() {
+			registerDataFormValidate();
+			registerAlertify4Local();
+			
+			<#if global.dev_mode>
+				var elem = document.querySelector('.js-switch');
+				var init = new Switchery(elem);
+				
+				$('.js-switch').change(function() {
+					var checked = $(this).prop("checked");
+					if(checked){
+						$("#oprt_role").val("Y");
+					}else{
+						$("#oprt_role").val("N");
+					}
+				});
+				
+				<#if (data.OPRT_ROLE_DISPLAY_FLG!'N') == 'Y'>
+					setSwitchery(init, true);
+				</#if>
+			</#if>
+
+
+		});
+		
+
+		function setSwitchery(switchElement, checkedBool) {
+			if ((checkedBool && !switchElement.isChecked()) || (!checkedBool && switchElement.isChecked())) {
+				switchElement.setPosition(true);
+				switchElement.handleOnchange(true);
+			}
+		}
+
+		//提交信息验证
+		function registerDataFormValidate() {
+			$('#dataForm').formValidation({
+				framework : "bootstrap4",
+				button : {
+					selector : '#btnSubmit',
+					disabled : 'disabled'
+				},
+				icon : null,
+				fields : {
+					"param.DEFAULT_PASSWORD" : {
+						validators : {
+							notEmpty : {
+								message : '不能为空'
+							},
+							stringLength : {
+								min : 6,
+								max :20,
+								message : '密码长度必须大于6位,小于20'
+							}
+						}
+					},
+					"param.UPGRADE_PVIP_SELLER_VIP_NUM" : {
+						validators : {
+							notEmpty : {
+								message : '不能为空'
+							},
+							digits : {
+								message : '只能为数字'
+							},
+							stringLength:{
+								message : '最多能输入4个字符',
+								max: 4
+							}
+						}
+					},
+					"param.FINISH_ORDER_UN_SERVICE" : {
+						validators : {
+							notEmpty : {
+								message : '不能为空'
+							},
+							digits : {
+								message : '只能为数字'
+							},
+							stringLength:{
+								message : '最多能输入4个字符',
+								max: 4
+							}
+						}
+					},
+					"param.INTEGRAL_RULE" : {
+						validators : {
+							notEmpty : {
+								message : '不能为空'
+							},
+							numeric: {
+								message: '请输入数字'
+							},
+							stringLength:{
+								message : '最多能输入5个字符',
+								max: 5
+							}
+						}
+					}
+
+				},
+				err : {
+					clazz : 'invalid-feedback'
+				},
+				control : {
+					valid : 'is-valid',
+					invalid : 'is-invalid'
+				},
+				row : {
+					invalid : 'has-danger'
+				},
+				success : {
+
+				}
+			}).on('success.form.fv', function(e) {
+				e.preventDefault();
+				var $form = $(e.target), fv = $(e.target).data('formValidation');
+				$.ajax({
+					url : "${ctx}/system/globalConfig/save",
+					type : 'POST',
+					data : $form.serialize(),
+					dataType : "json",
+					success : function(result) {
+						e.stopPropagation();
+						if (result.state == "ok") {
+							alertify.success("保存成功");
+							setTimeout(function(){
+								//页面刷新
+								window.location.reload();
+							}, 1000);
+							
+						} else {
+							resultErr(result);
+						}
+						$("input[name ='formToken" + $("input[name ='formTokenSuffix']").val() + "']").val(result.formToken);
+					}
+				});
+			});
+		}
+	</script>
+</body>
+</html>

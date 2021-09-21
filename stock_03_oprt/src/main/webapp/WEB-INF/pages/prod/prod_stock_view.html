@@ -1,0 +1,50 @@
+<link rel="stylesheet" href="${ctx}/assets/plugin/timeline/timeline.css">
+<div class="modal-dialog modal_simple">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title">库存详情</h4>
+		</div>
+		<div class="modal-body p-10">
+			<div class="row">
+				<label class="col-lg-3 form-control-label text-right">类型:</label>
+				<div class="col-lg-8">${entity.log_type_str!}</div>
+			</div>
+			<div class="row">
+				<label class="col-lg-3 form-control-label text-right">数量:</label>
+				<div class="col-lg-8">${entity.quantity!} ${prod.stockUnit!'-'}</div>
+			</div>
+			<div class="row">
+				<label class="col-lg-3 form-control-label text-right">价格:</label>
+				<div class="col-lg-8">${entity.price!0} ${prod.priceUnit!'-'}</div>
+			</div>
+			<div class="row">
+				<label class="col-lg-3 form-control-label text-right">备注:</label>
+				<div class="col-lg-8">${entity.description!''}</div>
+			</div>
+			<div class="row">
+				<label class="col-lg-3 form-control-label text-right">附件:</label>
+				<div class="col-sm-8 row" id="attachDiv">
+					<#include "../include/attach_disp.ftl"/>
+					<@attach_disp attaches=stockAttach! attachField='attachId' attachDivId='attachDiv' attachNum=20 fileType='a' position='m' readonly=true
+					></@attach_disp>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer text-center pb-10">
+			<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">关 闭</a>
+		</div>
+	</div>
+</div>
+<script src="${ctx}/assets/vendor/jquery-appear/jquery.appear.js"></script>
+<script src="${ctx}/assets/plugin/timeline/timeline.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+	$('#ajaxModal').on('hidden.bs.modal', function (e) {
+		//清除modal内容
+		$("#ajaxModal").remove();
+	})
+});
+
+
+</script>

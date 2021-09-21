@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 系统账户设置</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+<link rel="stylesheet" href="${ctx}/assets/css/page/notebook.css?v=1.21.1">
+<style>
+.page-aside-section:first-child {
+    padding-top: 0px;
+}
+</style>
+</head>
+<body class="animsition app-notebook page-aside-static page-aside-left">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_SYSTEM" action="P_O_ACCOUNT_MAG"></@admoprt_menu>
+	<div class="page">
+			<div class="page-header">
+				<h1 class="page-title">系统账户设置</h1>
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+					<li class="breadcrumb-item">系统管理</li>
+				</ol>
+			</div>
+			<div class="page-content container-fluid">
+				<div class="panel">
+					<#include "system_nav.html"/>
+					<div class="panel-body p-10">
+						<div id="contactsContent" class="page-content page-content-table" data-plugin="selectable">
+							<table 	id="dataTable" 
+									data-toggle="table" 
+									data-data-field="list" 
+									data-buttons-class="default"
+									data-method="post" 
+									data-pagination="true" 
+									data-url="${ctx}/system/account/list" 
+									data-side-pagination="server" 
+									data-search="true" 
+									<#if (cond.keyword!'') != ''>
+										data-search-text="${cond.keyword!''}"
+									</#if>
+									<#if (cond.pageNo!-1) !=-1>
+									data-page-number = ${cond.pageNo!0}
+									</#if>
+									data-adv-search="false" 
+									data-query-params="queryAdvParams"
+									data-content-type="application/x-www-form-urlencoded"
+									data-toolbar = "#toolbar"
+									data-show-refresh="true"
+									data-mobile-responsive="true"
+									data-show-columns="true"
+									data-striped="true"
+									data-page-size="${cond.pageSize!20}"
+									data-page-list="[10, 20, 50, 100]"
+									<#if (cond.orderField!'') != '' && (cond.orderDir!'') !=''>
+									data-sort-name = "${cond.orderField!''}"
+									data-sort-order = "${cond.orderDir!''}"
+									</#if>
+									data-cookie="true"
+									data-cookie-id-table="account_maintain"
+									data-cookie-expire="1m"
+									data-cookies-enabled="bs.table.columns"
+									>
+								<thead>
+									<tr>
+										<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+										<th data-field="user_name" data-sortable="true" data-align="left">账户名</th>
+										<th data-field="user_real_name" data-sortable="true" data-align="left">姓名</th>
+										<th data-field="user_mobile" data-sortable="true" data-align="left">手机号</th>
+										<th data-field="valid_flg_str" data-sortable="true" data-align="center">账户状态</th>
+										<th data-field="lastest_login_ip" data-sortable="false" data-align="left">最近登录IP</th>
+										<th data-field="lastest_login_time_str" data-sortable="true" data-align="left">最近登录时间</th>
+										<th data-field="create_date_str" data-sortable="true" data-align="left" data-visible="false">创建时间</th>
+										<th data-width="180px" data-align="left" data-field="action" data-formatter="actionFormatter" data-events="actionEvents">操作</th>
+									</tr>
+								</thead>
+							</table>					
+						</div>
+					</div>
+				</div>
+			</div>
+	</div>
+	<!-- TABLE CONTENT END -->
+	<!-- Site Action -->
+	<div class="site-action" data-plugin="actionBtn">
+		<button type="button" class="site-action-toggle btn-raised btn btn-success btn-floating" data-toggle="tooltip" data-placement="left" data-original-title="添加新用户">
+			<a href="${ctx}/system/account/edit" style="color: #FFFFFF" data-content="Hello">
+				<i class="front-icon wb-plus animation-scale-up" aria-hidden="true"></i>
+			</a>
+		</button>
+	</div>
+	<!-- End Site Action -->
+	
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table.min.js"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_190611"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function(){
+			//用于左侧列表滚动条高度
+			findDimensions();
+			var tableHeight=400;
+			if(winHeight-300 > tableHeight){
+				tableHeight = winHeight-300;
+			}
+			$("#contactsContent").css("min-height",tableHeight+"px");
+			//调整表格高度
+			loadFilterCond();
+			//弹框初始化
+			registerAlertify4Local();
+		});
+
+		//获得左侧栏数据
+		function loadFilterCond(){
+			var roleId = $("#roleId").val();
+			$.ajax({
+				type: "post",
+				url: "${ctx}/system/account/loadFilterCond",
+				data:{
+					"filter_keyword": $("#filter_keyword").val()
+				},
+				dataType: "json",
+				success: function(result){
+					if(result.state=="ok"){
+						var roles = result.data.roles;
+						var str = "";
+						if(roles != null && roles.length > 0){
+							var filterAllActive = "";
+							if('${cond.filterValue!}' == ''){
+								filterAllActive = "active";
+							}
+							str += '<a class="list-group-item '+filterAllActive+'" href="javascript:void(0)" onclick="_filter(this,null)">'
+										+'<div class="list-conten">'
+											+'<span class="list-text"><i class="fa fa-th"></i> 所有记录</span>'
+										+'</div>'
+									+'</a>'
+							for(var i=0;i<roles.length;i++){
+								var active = "";
+								if('${cond.roleId!}' == roles[i].id){
+									active = "active";
+								}
+								str += 	'<a class="list-group-item '+active+'" href="javascript:void(0)" onclick="_filter(this,'+roles[i].id+')">'
+											+'<div class="list-content" >'
+												+'<span class="item-right">'+roles[i].user_cnt+'</span>'
+												+'<span class="list-text">'+ (i+1) + ".    " + roles[i].role_name+'</span>'
+											+'</div>'
+										+'</a>'
+							}
+						}else{
+							str += '<li class="list-group-item"><div class="list-conten"><span class="list-text">暂无匹配的记录！</span></div></li>';
+						}
+						$("#roleFilterCondDiv").html(str);
+					}else{
+						//alert("左侧数据获取失败");
+					}
+				}
+			});
+		}
+		
+		//高级查询
+		function queryAdvParams(options) {
+			return jQuery.extend(options, {
+				roleId : $("#roleId").val()
+			});
+		}
+		
+		//用于左侧列表滚动条高度
+		$dataTable.bootstrapTable({
+			onLoadSuccess: function(data) {
+				//leftHeight(10);
+			}
+		});
+		
+		function serialNumGen(value,row,index){
+			return index+1;
+		}
+
+		//操作
+		function actionFormatter(value,row,index){
+			var _reset = "";
+			var _disable = "";
+			var _enable = "";
+			var _edit = "";
+			if(row.valid_flg == "Y"){
+				_reset = '<a class="btn btn-link btn-xs text-primary" onclick="_reset(\''+row.id+'\',\''+row.user_type+'\')">重置密码</a>';
+				if(row.biz_id==null){
+					_disable = '<a class="btn btn-link btn-xs text-primary" id="btnCancel" onclick="cancelOrActive(\''+row.id+'\',\''+row.valid_flg+'\',\''+row.user_name+'\')">注销</a>'; 
+				}
+				_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/system/account/edit?id='+row.id+'">编辑</a>';
+			}else if(row.valid_flg == "N" && row.biz_id==null){
+				_enable = '<a class="btn btn-link btn-xs text-warning" onclick="cancelOrActive(\''+row.id+'\',\''+row.valid_flg+'\',\''+row.user_name+'\');">激活</a>'; 
+			} 
+			return _edit+ _reset +_disable+_enable;
+		}
+
+		//重置密码
+		function _reset(id,userType){
+			alertify.confirm("确认重置密码吗？", function () {
+				$.ajax({
+					type: "post",
+					url: "${ctx}/system/account/resetPwd",
+					data: {"id":id,"userType":userType},
+					dataType: "json",
+					success: function(result){
+						if(result.state=="ok"){
+							alertify.success("重置成功");
+							$dataTable.bootstrapTable('refresh');
+						}else{
+							resultErr(result);
+						}
+					}
+				});
+			}, function () {
+			});
+		}
+
+		//注销/激活操作
+		function cancelOrActive(id,validFlg,userName){
+			if("Y" == validFlg){
+				alertify.confirm("确定注销该账号吗？", function () {
+					$.ajax({
+						type: "post",
+						url: "${ctx}/system/account/disableOrEnable",
+						data: {"id":id,"validFlg":"N","userName":userName},
+						dataType: "json",
+						success: function(result){
+							if(result.state=="ok"){
+								alertify.success("注销成功");
+								$dataTable.bootstrapTable('refresh');
+							}else{
+								resultErr(result);
+							}
+						}
+					});
+				}, function () {
+				});
+			}else if("N" == validFlg){
+				alertify.confirm("确认激活该账号吗？", function () {
+					$.ajax({
+						type: "post",
+						url: "${ctx}/system/account/disableOrEnable",
+						data: {"id":id,"validFlg":"Y","userName":userName},
+						dataType: "json",
+						success: function(result){
+							if(result.state=="ok"){
+								alertify.success("激活成功");
+								$dataTable.bootstrapTable('refresh');
+							}else{
+								resultErr(result);
+							}
+						}
+					});
+				}, function () {
+				});
+			}
+		}
+	</script>
+</body>
+</html>

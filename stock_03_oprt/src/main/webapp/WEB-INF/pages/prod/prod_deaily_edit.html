@@ -1,0 +1,193 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<link rel="stylesheet" href="${ctx}/assets/vendor/bootstrap-datepicker/bootstrap-datepicker.min.css">
+<div class="modal-dialog modal-simple">
+<form class="form-horizontal" method="post" role="form" id="dataForm">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+			<h4 class="modal-title">
+				商品每日记录<#if entity.id??>编辑<#else>新增</#if>&nbsp;&nbsp;
+			</h4>
+		</div>
+		<div class="alert alert-warning alert-dismissible" role="alert">
+			操作提示：每日商品，每个日期只存在一条商品记录。如编辑日期，则会更改修改后日期的数据。
+		</div>
+		<div class="modal-body">
+			<!-- 防止重复提交TOKEN  begin-->
+			${token!''}
+			<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+			<input type="hidden" name="entity.id" value="${entity.id!''}" />
+			<input type="hidden" name="entity.prodId" value="${entity.prodId!''}" />
+			<div class="form-group row">
+				<label class="col-sm-3 form-control-label" for="name">数量：
+					<span class="required" style="color: red;">*</span>
+				</label>
+				<div class="col-sm-8">
+					<div class="input-group">
+						<input type="text"  class="form-control" name="entity.stock" value="${entity.stock!''}">
+						<span class="input-group-addon">${prod.stockUnit!'-'}</span>
+					</div>
+					<span class="text-help">请填写整数，如1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-sm-3 form-control-label" for="name">入库价格：
+					<span class="required" style="color: red;">*</span>
+				</label>
+				<div class="col-sm-8">
+					<div class="input-group">
+						<input type="text"  class="form-control" name="entity.price" value="${entity.price!''}">
+						<span class="input-group-addon">${prod.priceUnit!'-'}</span>
+					</div>
+					<span class="text-help">请填写数字，如1或者1.1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-sm-3 form-control-label" for="name">出库价格：
+					<span class="required" style="color: red;">*</span>
+				</label>
+				<div class="col-sm-8">
+					<div class="input-group">
+						<input type="text"  class="form-control" name="entity.outPrice" value="${entity.outPrice!''}">
+						<span class="input-group-addon">${prod.priceUnit!'-'}</span>
+					</div>
+					<span class="text-help">请填写数字，如1或者1.1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-sm-3 form-control-label" for="name">当天利润：
+					<span class="required" style="color: red;">*</span>
+				</label>
+				<div class="col-sm-8">
+					<div class="input-group">
+						<input type="text"  class="form-control" name="entity.profit" value="${entity.profit!''}">
+						<span class="input-group-addon">${prod.priceUnit!'-'}</span>
+					</div>
+					<span class="text-help">请填写数字，如1或者1.1</span>	
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-3 form-control-label" for="name">日期：</label>
+				<div class="col-md-8 input-group">
+					<input type="text" id="deaily" name="entity.deaily" value="${entity.deaily?string('yyyy-MM-dd')}" class="form-control"
+						 readonly />
+					<span class="input-group-addon">
+						<i class="icon wb-calendar" aria-hidden="true"></i>
+					</span>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer text-left">
+			<button class="btn btn-primary" type="submit" id="btnSubmit"><i class="fa fa-save"></i> 保存</button>
+			<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">取 消</a>
+		</div>
+	</div>
+</form>
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<!-- 日期插件 -->
+	<script src="${ctx}/assets/vendor/bootstrap-datepicker/bootstrap-datepicker.js?v=v1.7.1"></script>
+	<script src="${ctx}/assets/vendor/bootstrap-datepicker/bootstrap-datepicker.zh-CN.min.js?v=v1.7.1"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		registerDataFormValidate();
+		registerAlertify4Local();
+		$('#ajaxModal').on('hidden.bs.modal', function (e) {
+			//清除modal内容
+			$("#ajaxModal").remove();
+		})
+		//设置日期格式
+		$('#deaily').datepicker({
+			format: "yyyy-mm-dd",//日期格式
+			language: 'zh-CN',
+			todayBtn: "linked",
+			autoclose:true
+		});
+
+	});
+
+	//提交信息验证
+	function registerDataFormValidate() {
+		$('#dataForm').formValidation({
+			framework : "bootstrap4",
+			button : {
+				selector : '#btnSubmit',
+				disabled : 'disabled'
+			},
+			icon : null,
+			fields : {
+				"entity.stock" : {
+					validators : {
+						notEmpty : {
+							message : '请输入库存数量'
+						}
+					}
+				},
+				"entity.price" : {
+					validators : {
+						notEmpty : {
+							message : '请输入入库价格'
+						}
+					}
+				},
+				"entity.outPrice" : {
+					validators : {
+						notEmpty : {
+							message : '请输入出库价格'
+						}
+					}
+				},
+				"entity.profit" : {
+					validators : {
+						notEmpty : {
+							message : '请输入当天利润'
+						}
+					}
+				}
+			},
+			err : {
+				clazz : 'invalid-feedback'
+			},
+			control : {
+				valid : 'is-valid',
+				invalid : 'is-invalid'
+			},
+			row : {
+				invalid : 'has-danger'
+			},
+			success:{
+				
+			}
+		}).on('success.form.fv',function(e){
+			e.preventDefault();
+			var $form = $(e.target),
+				fv = $(e.target).data('formValidation');
+			$.ajax({
+				url :"${ctx}/prod/deaily/saveOrUpdate",
+				type : 'POST',
+				data : $form.serialize(),
+				dataType : "json",
+				success: function(result){
+					e.stopPropagation();
+					if(result.state == "ok"){
+						alertify.success("保存成功");
+						setTimeout(function(){
+						//关闭当前弹出框
+						$('#ajaxModal').modal('hide');
+						parent.$('#deailyDataTable').bootstrapTable('refresh');
+					},1000)
+				}else{
+					
+					$("#btnSubmit").removeClass("disabled");
+					$("#btnSubmit").removeAttr("disabled");
+					//加入token问题
+					if(result.formToken){
+						$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+					}
+					resultErr(result);
+				}
+				}
+			});
+		});
+	}
+</script>

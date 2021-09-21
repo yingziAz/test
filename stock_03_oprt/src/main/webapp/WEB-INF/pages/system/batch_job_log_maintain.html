@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 跑批任务日志</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+</head>
+<body class="animsition">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_SYS_LOG" action=""></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">跑批任务日志</h1>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+				<li class="breadcrumb-item">平台日志</li>
+			</ol>
+		</div>
+		<div class="page-content container-fluid">
+			<div class="panel">
+				<#include "./log_nav.html" />
+				<div class="panel-body p-10">
+					<div class="btn-group hidden-sm-down" id="toolbar" >
+						<a href="${ctx}/system/batchLog/index4Quartz" class="btn btn-outline btn-primary" onclick="modal(event,this)"><i class="fa fa-hand-pointer-o"></i> 手动跑批</a>
+					</div>
+					<table 	id="dataTable" 
+						data-toggle="table" 
+						data-buttons-class="default"
+						data-content-type="application/x-www-form-urlencoded"
+						data-url="${ctx}/system/batchLog/list" 
+						data-side-pagination="server" 
+						data-search="true" 
+						data-adv-search="false" 
+						data-query-params="queryAdvParams"
+						data-toolbar = "#toolbar"
+						data-show-refresh="true"
+						data-mobile-responsive="true"
+						data-striped="true"
+						data-data-field="list" 
+						data-method="post" 
+						data-pagination="true" 
+						data-show-columns="true"
+						data-page-size="20"
+						data-page-list="[10, 20, 50, 100]"
+						data-cookie="true"
+						data-cookie-id-table="batch_job_log_maintain"
+						data-cookie-expire="1m"
+						data-cookies-enabled="bs.table.columns"
+						>
+						<thead>
+							<tr>
+								<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+								<th data-field="job_name" data-sortable="true" data-align="left">跑批任务名称</th>
+								<th data-field="jobRunTime4Str" data-sortable="true" data-align="left">跑批开始时间</th>
+								<th data-field="jobFinishTime4Str" data-sortable="true" data-align="left">跑批结束时间</th>
+								<th data-field="succFlgDisp" data-sortable="true" data-align="left">跑批是否成功</th>
+								<th data-field="error_msg" data-sortable="true" data-align="left">跑批信息</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_190611"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function() {
+		});
+
+		function serialNumGen(value, row, index) {
+			return index + 1;
+		}
+		//高级查询
+		function queryAdvParams(options) {
+			return jQuery.extend(options, {
+			});
+		}
+	</script>
+</body>
+</html>

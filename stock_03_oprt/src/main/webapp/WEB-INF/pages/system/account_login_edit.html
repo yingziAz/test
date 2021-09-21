@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 个人账户维护</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+</head>
+<body class="animsition dashboard">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="home" action=""></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">个人账户维护</h1>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+				<li class="breadcrumb-item">个人信息维护</li>
+			</ol>
+			<div class="page-header-actions">
+				<a class="btn btn-sm btn-inverse btn-round"  href="${ctx}/home" > 
+					<i class="icon wb-reply" aria-hidden="true"></i> 
+					<span class="hidden-sm-down">返回</span>
+				</a>		
+			</div>
+		</div>
+		<div class="page-content container-fluid">
+			<div class="panel">
+				<div class="nav-tabs-horizontal" data-plugin="tabs">
+					<ul class="nav nav-tabs nav-tabs-line" role="tablist">
+						<li class="nav-item" role="presentation">
+							<a class="nav-link active" data-toggle="tab" href="#loginInfo" aria-controls="loginInfo" role="tab">	个人信息修改
+							</a>
+						</li>
+						<li class="nav-item" role="presentation">
+							<a class="nav-link" data-toggle="tab" href="#loginPsd" aria-controls="loginPsd" role="tab">
+								密码修改
+							</a>
+						</li>
+					</ul>
+					<div class="panel-body">
+						<div class="example-wrap m-xl-0">
+							<div class="nav-tabs-horizontal" data-plugin="tabs">
+								<div class="tab-content pt-20">
+									<div class="tab-pane active" id="loginInfo" role="tabpanel">
+										<form class="form-horizontal" id="dataForm" autocomplete="off">
+											<!-- 防止重复提交TOKEN  begin-->
+											${token!''}
+											<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+											<!-- 防止重复提交TOKEN  end-->
+											<input type="hidden" name="entity.id" class="form-control" value="${entity.id!}" />
+											<div class="form-group row">
+												<label class="col-md-2 form-control-label">用户名：</label>
+												<div class="col-md-6">
+												  <input type="text" class="form-control" name="entity.userName" value="${entity.userName!''}" placeholder="请输入用户名" readonly="readonly" />
+												</div>
+											</div>
+											<div class="form-group row">
+												<label class="col-md-2 form-control-label">姓名：</label>
+												<div class="col-md-6">
+													<input type="text" class="form-control" name="entity.userRealName" value="${entity.userRealName!''}" placeholder="请输入真实姓名"/>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label class="col-md-2 form-control-label">手机号码：</label>
+												<div class="col-md-6">
+													<input type="text" class="form-control" name="entity.userMobile" value="${entity.userMobile!''}" 
+													placeholder="请输入手机号码"/>
+												</div>
+											</div>
+											<div class="col-md-5 text-right ">
+												<button type="submit" id="btnSubmit" class="btn btn-primary" ><i class="fa fa-save"></i> 保存</button>
+												<button type="reset" class="btn btn-default" >重置</button>
+											</div>
+										</form>
+									</div>
+									<div class="tab-pane" id="loginPsd" role="tabpanel">
+										<form class="form-horizontal" id="changePsdForm" autocomplete="off">
+											<input type="hidden" name="entity.id" class="form-control" value="${entity.id!}" />
+											<div class="form-group row">
+												<label class="col-md-2 form-control-label">原密码：
+													<span class="required" style="color: red;">*</span>
+												</label>
+												<div class="col-md-6">
+												  <input type="text" class="form-control" id="oldPsd" name="entity.oldPsd" placeholder="原密码，必须输入项" />
+												</div>
+											</div>
+											<div class="form-group row">
+												<label class="col-md-2 form-control-label">新密码：
+													<span class="required" style="color: red;">*</span>
+												</label>
+												<div class="col-md-6">
+													<input type="password" class="form-control" name="entity.newPsd" placeholder="新密码，必须输入项"/>
+												</div>
+											</div>
+											<div class="form-group row">
+												<label class="col-md-2 form-control-label">确认新密码：
+													<span class="required" style="color: red;">*</span>
+												</label>
+												<div class="col-md-6">
+													<input type="password" class="form-control" name="entity.reNewPsd" placeholder="确认新密码"/>
+												</div>
+											</div>
+											<div class="col-md-5 text-right ">
+												<button type="submit" id="btnSubmit2" class="btn btn-primary" ><i class="fa fa-save"></i> 保存</button>
+												<button type="reset" class="btn btn-default" >重置</button>
+											</div>
+										</form>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<#include "../include/page-footer.html"/>
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+	<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function(){
+			registerDataFormValidate();
+			registerAlertify4Local();
+			changePsd();
+		});
+
+		//提交信息验证
+		function registerDataFormValidate() {
+			$('#dataForm').formValidation({
+				framework : "bootstrap4",
+				button : {
+					selector : '#btnSubmit',
+					disabled : 'disabled'
+				},
+				icon : null,
+				fields : {
+					"entity.userName" : {
+						validators : {
+							notEmpty : {
+								message : '请输入用户名'
+							}
+						}
+					},
+					"entity.userRealName" : {
+						validators : {
+							notEmpty : {
+								message : '请输入真实姓名'
+							}
+						}
+					}
+// 					,
+// 					"entity.userMobile" : {
+// 						validators : {
+// 							notEmpty : {
+// 								message : '请输入手机号码'
+// 							}
+// 					,
+// 							phone : {
+// 								country : 'CN',
+// 								message : '请输入正确手机号'
+// 							}
+// 						}
+// 					}
+				},
+				err : {
+					clazz : 'invalid-feedback'
+				},
+				control : {
+					valid : 'is-valid',
+					invalid : 'is-invalid'
+				},
+				row : {
+					invalid : 'has-danger'
+				},
+				success:{
+					
+				}
+			}).on('success.form.fv',function(e){
+				e.preventDefault();
+				var $form = $(e.target),
+					fv = $(e.target).data('formValidation');
+				$.ajax({
+					url :"${ctx}/system/account/infoUpdate",
+					type : 'POST',
+					data : $form.serialize(),
+					dataType : "json",
+					success: function(result){
+						if(result.state == "ok"){
+							alertify.success("更新成功");
+							setTimeout(function(){
+								goBack();
+							},1000);
+						}else{
+							//加入token问题
+							if(result.formToken){
+								$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+							}
+							resultErr(result);
+						}
+					}
+				});
+			});
+		}
+		//返回
+		function goBack(){
+			location.href = "${ctx}/system/account/loginEdit"
+		}
+
+		//密码修改验证
+		function changePsd(){
+			$('#changePsdForm').formValidation({
+				framework : "bootstrap4",
+				button : {
+					selector : '#btnSubmit2',
+					disabled : 'disabled'
+				},
+				icon : null,
+				fields : {
+					"entity.oldPsd" : {
+						verbose: false,
+						validators : {
+							notEmpty : {
+								message : '请输入原密码'
+							}
+						}
+					},
+					"entity.newPsd" : {
+						validators : {
+							notEmpty : {
+								message : '请输入新密码'
+							},
+						}
+					},
+					"entity.reNewPsd" : {
+						validators : {
+							notEmpty : {
+								message : '请确认新密码'
+							},
+							identical : {
+								field : 'entity.newPsd',
+								message : '两次密码不一致，请重新输入'
+							}
+						}
+					}
+				},
+				err : {
+					clazz : 'invalid-feedback'
+				},
+				control : {
+					valid : 'is-valid',
+					invalid : 'is-invalid'
+				},
+				row : {
+					invalid : 'has-danger'
+				},
+				success:{
+					
+				}
+			}).on('success.form.fv',function(e){
+				e.preventDefault();
+				var $form = $(e.target),
+					fv = $(e.target).data('formValidation');
+				$.ajax({
+					url :"${ctx}/system/account/executeChangeiPwd",
+					type : 'POST',
+					data : $form.serialize(),
+					dataType : "json",
+					success: function(result){
+						if(result.state == "ok"){
+							alertify.success("更新成功");
+							setTimeout(function(){
+								goBack();
+							},1000);
+						}else{
+							resultErr(result);
+						}
+					}
+				});
+			});
+		}
+		</script>
+</body>
+</html>

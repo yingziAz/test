@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 字典维护</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+</head>
+<body class="animsition app-projects">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_MAINTAIN_MAG" action="P_O_GLOBAL_CONFIG_MAINTAIN"></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">平台基础设置</h1>
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+				<li class="breadcrumb-item">维护工具</li>
+			</ol>
+		</div>
+		<div class="page-content container-fluid">
+			<div class="panel">
+			<#include "setting_nav.html"/>
+				<div class="panel-body p-10">
+					<div class="row row-lg">
+						<div class="col-md-12">
+							<div class="">
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+											<th style="width:30px;text-align:center">#</th>
+											<th>字典名称</th>
+											<th>操作</th>
+										</tr>
+									</thead>
+									<tbody>
+										<#if list??>
+										<#list list as bean>
+										<tr>
+											<td style="text-align:center">${bean_index+1}</td>
+											<td>${bean.dictName!}</td>
+											<td>
+												<a class="btn btn-link btn-xs text-primary" href="${ctx}/system/dict/dictEnum?dictId=${bean.id}" onclick="modal(event,this)">字典值维护</a>
+											</td>
+										</tr>
+										</#list>
+										</#if>
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+	
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function() {
+	
+		});
+
+		function serialNumGen(value, row, index) {
+			return index + 1;
+		}
+
+		//高级查询
+		function queryAdvParams(options) {
+			return jQuery.extend(options, {
+			});
+		}
+
+		//操作
+		function actionFormatter(value, row, index) {
+			var editStr = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/system/globalConfig/edit?id=' + row.id + '" style="text-decoration: none" onclick="modal(event,this)">编辑</a>';
+			return editStr;
+		}
+	</script>
+</body>
+</html>

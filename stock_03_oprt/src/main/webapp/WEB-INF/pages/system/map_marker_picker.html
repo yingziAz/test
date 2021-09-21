@@ -1,0 +1,240 @@
+<script charset="utf-8" src="https://map.qq.com/api/js?v=2.exp&key=75FBZ-IKRWW-4QTRC-RCA2B-TOXEO-6VBJ6"></script>
+<style>
+.modal_wrapper {
+	display: table;
+	height: 100%;
+	margin: 0px auto;
+	margin-top: 20px;
+}
+</style>
+<div class="modal-dialog modal-lg modal_wrapper" >
+	<div class="modal-content" id="mapPickerModalContent">
+		<div class="modal-header">
+			<h4 class="modal-title">地图地址打点器 <small>在地图上定位地址，鼠标点击地图生成标记或拖动标记<image src="${ctx}/assets/images/marker.png" style="width:18px;height:18px;"></image></small></h4>
+			<button type="button" class="close" aria-hidden="true" data-dismiss="modal">×</button>
+		</div>
+		<div class="modal-body">
+			<div class="row">
+				<div class="col-xl-6" >
+					<div class="form-group">
+						<div class="input-group">
+							<input type="text" class="form-control" placeholder="输入地址快速定位..." id="mm_address">
+							<span class="input-group-btn">
+								<button type="button" class="btn btn-default btn-outline btn-sm" onclick="analyzeAddress(document.getElementById('mm_address').value)"> 查找位置</button>
+								
+							</span>
+						</div>
+					</div>
+				</div>
+				<div class="col-xl-6" >
+					<button class="btn btn-primary btn-outline" onclick="pickerFinish()"><i class="fa fa-save"></i> 确定选择并返回</button>
+					<button class="btn btn-default btn-outline" type="button" class="close" aria-hidden="true" data-dismiss="modal"><i class="fa fa-close"></i> 关闭</button>
+				</div>
+				<div class="col-xl-12" >
+					<div id="modalQQMapContainer" style="height:100%;weight:300px;border:1px solid #e4eaec;">
+						<div id="surroundingPoisDivModal" class="w-300 pull-right" style="background:rgba(255,255,255,0.9);z-index:99999999!important;position:absolute;top:0px;right:0px;display:none;overflow-y:auto;height:100%;width:300px">
+							<div class="modal-header" style="border-bottom:1px solid #eee;padding:10px 20px;">
+								<button type="button" class="close" onclick='javascript:$("#surroundingPoisDivModal").hide();'>×</button>
+								<h5 class="modal-title">附近地址列表</h5>
+							</div>
+							<ul class="list-group list-group-dividered list-group-full" id="surroundingPoisULModal">
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer text-right">
+		</div>
+	</div>
+</div>
+<script type="text/javascript">
+	$(document).ready(function() {
+		initQQmapDataAndEvent();
+		findDimensions();
+		$("#mapPickerModalContent").width(winWidth*0.9);
+		$("#mapPickerModalContent").height(winHeight-20-20);
+		$("#modalQQMapContainer").height(winHeight-160);
+		
+		$('#mapPickerModal').on('hidden.bs.modal', function (e) {
+			//清除modal内容
+			$("#mapPickerModal").remove();
+		})
+	});
+	var modalQQMap;
+	var analyzeAddress;
+	var modalMarkderData = {};
+	function initQQmapDataAndEvent(){
+		modalQQMap = new qq.maps.Map(document.getElementById("modalQQMapContainer"), {
+			center: new qq.maps.LatLng(39.916527,116.397128),
+			zoom:12
+		});
+		var modalMarker;
+		<#assign isEdit = false >
+		<#if (lat!0) != 0>
+		<#assign isEdit = true >
+		</#if>
+		
+		<#if !isEdit || (lat!0) == 0 || (lng!0) == 0>
+		//新增的场合
+		//获取城市列表接口设置中心点
+		var citylocation = new qq.maps.CityService({
+			complete : function(result){
+				modalQQMap.setCenter(result.detail.latLng);
+			}
+		});
+		//调用searchLocalCity();方法	根据用户IP查询城市信息。
+		citylocation.searchLocalCity();
+		<#else>
+			//编辑的场合
+			modalQQMap.setCenter(new qq.maps.LatLng(${lat},${lng}));
+			modalMarker = new qq.maps.Marker({
+				position: new qq.maps.LatLng(${lat},${lng}),
+				draggable: true,
+				map: modalQQMap
+			});
+			
+			//设置Marker停止拖动事件
+			qq.maps.event.addListener(modalMarker, 'dragend', function() {
+				var newPt = modalMarker.getPosition();
+				analyzePoint(newPt);
+			});
+		</#if>
+
+		//map 点击事件
+		qq.maps.event.addListener(modalQQMap, 'click', function(event) {
+			if(modalMarker == undefined){
+				modalMarker = new qq.maps.Marker({
+					position: event.latLng,
+					draggable: true,
+					map: modalQQMap
+				});
+				
+				qq.maps.event.addListener(modalMarker, 'dragend', function() {
+					var newPt = modalMarker.getPosition(); // 重新获取点坐标
+					analyzePoint(newPt);
+				});
+			}else{
+				modalMarker.setPosition(event.latLng);
+			}
+			modalQQMap.panTo(event.latLng);
+			analyzePoint(event.latLng);
+		});
+		
+		//地图拖动事件
+		qq.maps.event.addListener(modalQQMap, 'dragend', function() {
+			if(modalMarker == undefined){
+				modalMarker = new qq.maps.Marker({
+					position: event.latLng,
+					draggable: true,
+					map: modalQQMap
+				});
+				qq.maps.event.addListener(modalMarker, 'dragend', function() {
+					var newPt = modalMarker.getPosition(); // 重新获取点坐标
+					analyzePoint(newPt);
+				});
+			}else{
+				modalMarker.setPosition(modalQQMap.getCenter());
+			}
+			analyzePoint(modalQQMap.getCenter());
+		});
+
+		var analyzePoint = function(point){
+			geocoder.getAddress(point);
+		}
+		analyzeAddress = function(address){
+			if(address != ''){
+				geocodeAddress.getLocation(address);
+			}
+		}
+		var geocodeAddress = new qq.maps.Geocoder({
+			complete : function(result){
+				modalQQMap.setCenter(result.detail.location);
+				if(modalMarker == undefined){
+					modalMarker = new qq.maps.Marker({
+						position: event.latLng,
+						draggable: true,
+						map: modalQQMap
+					});
+					qq.maps.event.addListener(modalMarker, 'dragend', function() {
+						var newPt = modalMarker.getPosition(); // 重新获取点坐标
+						analyzePoint(newPt);
+					});
+				}else{
+					modalMarker.setPosition(modalQQMap.getCenter());
+				}
+				var addComp = result.detail.addressComponents;
+				modalMarkderData.province = addComp.province;
+				modalMarkderData.city = addComp.city;
+				modalMarkderData.district = addComp.district;
+				modalMarkderData.lng = result.detail.location.lng;
+				modalMarkderData.lat = result.detail.location.lat;
+				modalMarkderData.address = result.detail.address;
+				$("#mm_address").val(result.detail.address);
+				//var surroundingPois = result.detail.nearPois;
+				//有推荐地点
+				//$("#surroundingPoisDivModal").show();
+				//var _html = new Array();
+				//if(surroundingPois){
+				//	for(var i=0;i<surroundingPois.length;i++){
+				//		var _sp = surroundingPois[i];
+				//		_html.push('<a class="list-group-item pl-10" href="javascript:void(0)" onclick="_pickerUpMapPointModal(this)"');
+				//		_html.push(' data-pt_lng="' + _sp.latLng.lng + '"');
+				//		_html.push(' data-pt_lat="' + _sp.latLng.lat + '"');
+				//		_html.push(' data-address="'+ _sp.address + '"');
+				//		_html.push(' >'+(i+1)+". "+_sp.address+"</a>");
+				//	}
+				//}
+				//$("#surroundingPoisULModal").html(_html.join(""));
+			}
+		});
+		
+		var geocoder = new qq.maps.Geocoder({
+			complete : function(result){
+				var addComp = result.detail.addressComponents;
+				modalMarkderData.province = addComp.province;
+				modalMarkderData.city = addComp.city;
+				modalMarkderData.district = addComp.district;
+				modalMarkderData.lng = result.detail.location.lng;
+				modalMarkderData.lat = result.detail.location.lat;
+				modalMarkderData.address = result.detail.address;
+				$("#mm_address").val(result.detail.address);
+				var surroundingPois = result.detail.nearPois;
+				//有推荐地点
+				$("#surroundingPoisDivModal").show();
+				var _html = new Array();
+				if(surroundingPois){
+					for(var i=0;i<surroundingPois.length;i++){
+						var _sp = surroundingPois[i];
+						_html.push('<a class="list-group-item pl-10" href="javascript:void(0)" onclick="_pickerUpMapPointModal(this)"');
+						_html.push(' data-pt_lng="' + _sp.latLng.lng + '"');
+						_html.push(' data-pt_lat="' + _sp.latLng.lat + '"');
+						_html.push(' data-address="'+ _sp.address + '"');
+						_html.push(' >'+(i+1)+". "+_sp.address+"</a>");
+					}
+				}
+				$("#surroundingPoisULModal").html(_html.join(""));
+			}
+		});
+		
+	}
+	
+	//从推荐的列表中选择
+	function _pickerUpMapPointModal(_this){
+		$(_this).siblings().removeClass("list-group-item-action active");
+		$(_this).addClass("list-group-item-action active");
+		var _data = $(_this).data();
+		modalMarkderData.lng = _data.pt_lng;
+		modalMarkderData.lat = _data.pt_lat;
+		modalMarkderData.address = _data.address;
+		$("#mm_address").val(_data.address);
+		modalQQMap.panTo(new qq.maps.LatLng(_data.pt_lat,_data.pt_lng));
+	};
+	
+	function pickerFinish(){
+		if(modalMarkderData && modalMarkderData.address){
+			mapMarkerPickerCallBack(modalMarkderData);
+		}
+		closeModal('mapPickerModal');
+	}
+</script>

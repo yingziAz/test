@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 程序异常日志</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+<link rel="stylesheet" href="${ctx}/assets/css/page/notebook.css?v=1.21.1">
+</head>
+<body class="animsition app-notebook page-aside-static page-aside-left">
+<#include "../include/page-header.html"/>
+<#include "../include/page-sidebar-wrapper.html"/>
+<@admoprt_menu type="F_O_SYS_LOG" action=""></@admoprt_menu>
+<div class="page">
+	<div class="page-aside">
+			<!-- Contacts Sidebar -->
+			<div class="page-aside-switch">
+				<i class="icon wb-chevron-left" aria-hidden="true"></i>
+				<i class="icon wb-chevron-right" aria-hidden="true"></i>
+			</div>
+			<div class="page-aside-inner page-aside-scroll" style="overflow: hidden;width: auto;height:90%">
+				<input type="hidden" id="filterValue"  />
+				<div data-role="container">
+					<div data-role="content">
+						<ul class="list-group" id="filterCondDiv">
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="page-main">
+		<div class="row"></div>
+			<div class="page-header">
+				<h1 class="page-title">程序异常日志</h1>
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+					<li class="breadcrumb-item">平台日志</li>
+				</ol>
+			</div>
+			<div class="page-content container-fluid">
+				<div class="panel">
+					<#include "./log_nav.html" />
+					<div class="panel-body p-10">
+						<table id="dataTable" 
+							data-toggle="table" 
+							data-buttons-class="default"
+							data-data-field="list" 
+							data-method="post" 
+							data-pagination="true" 
+							data-query-params="queryAdvParams"
+							data-url="${ctx}/system/exception/log/list" 
+							data-side-pagination="server" 
+							data-search="true" 
+							data-content-type="application/x-www-form-urlencoded"
+							data-toolbar = "#toolbar"
+							data-show-refresh="true"
+							data-show-columns="true"
+							data-page-size="20"
+							data-page-list="[10, 20, 50, 100]"
+							data-cookie="true"
+							data-cookie-id-table="exception_maintain"
+							data-cookie-expire="1m"
+							data-cookies-enabled="bs.table.columns"
+						>
+							<thead>
+								<tr>
+									<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+									<th data-field="err_msg" data-sortable="true" data-align="left">错误内容</th>
+									<th data-width="100px" data-field="err_time" data-sortable="true" data-align="center">出错时间</th>
+									<th data-width="100px" data-field="root_path" data-sortable="true" data-align="left">项目</th>
+									<th data-width="80px" data-field="handleFlg4Str" data-sortable="true" data-align="center">是否修复</th>
+									<th data-width="140px" data-field="handle_desc" data-sortable="true" data-align="left">处理备注</th>
+									<th data-width="100px" data-field="handle_time" data-sortable="true" data-align="center">处理时间</th>
+									<th data-width="80px" data-align="center" data-field="action" data-formatter="actionFormatter" data-events="actionEvents">操作</th>
+								</tr>
+							</thead>
+						</table>
+					</div>
+				</div>
+			</div>
+	</div>
+</div>
+<!-- Site Action -->
+
+<!-- End Site Action -->
+<!-- Site Action -->
+<!-- Footer -->
+<#include "../include/page-footer.html"/>
+<#include "../include/page-js-plugins.html"/>
+<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_190611"></script>
+<script type="text/javascript">
+	var $dataTable = $('#dataTable');
+	$(document).ready(function() {
+		//弹框初始化
+		registerAlertify4Local();
+		loadFilterCond();
+	});
+
+	function serialNumGen(value, row, index) {
+		return index + 1;
+	}
+
+	//高级查询
+	function queryAdvParams(options) {
+		return jQuery.extend(options, {
+			filterValue:$("#filterValue").val()
+		});
+	}
+
+	//操作
+	function actionFormatter(value, row, index) {
+		var _edit ="";
+		var _repair ="";
+		var _delete="";
+		_delete = '<a class="btn btn-link btn-xs text-primary" id="btnCancel" onclick="_delete(\''+row.id+'\')">删除</a>';
+		if(row.handle_flg == "Y"){
+		_edit='<a class="btn btn-link btn-xs text-primary" href="${ctx}/system/exception/log/edit?id='+row.id+'"onclick="modal(event,this)">处理备注</a>';
+		}else if(row.handle_flg == "N"){
+		_repair = '<a class="btn btn-link btn-xs text-warning" onclick="CancellationOrActivation(\''+row.id+'\',\''+row.handle_flg+'\');">修复</a>';
+		}
+		
+		return _edit + _repair+_delete;
+	}
+	//修复操作
+	function CancellationOrActivation(id,handle_flg){
+		if("N" == handle_flg){
+			alertify.confirm("确认修复吗？", function () {
+				$.ajax({
+					type: "post",
+					url: "${ctx}/system/exception/log/repair",
+					data: {"id":id,"handle_flg":"Y"},
+					dataType: "json",
+					success: function(result){
+						if(result.state=="ok"){
+							alertify.success("修复成功");
+							loadFilterCond();
+							$dataTable.bootstrapTable('refresh');
+						}else{
+							resultErr(result);
+						}
+					}
+				});
+			}, function () {
+//	 			alertify.error("取消");
+			});
+		}
+	}
+	
+	//删除
+	function _delete(id){
+		alertify.confirm("确认删除该条信息吗？", function () {
+			$.ajax({
+				type: "post",
+				url: "${ctx}/system/exception/log/remove",
+				data: {"id":id},
+				dataType: "json",
+				success: function(result){
+					if(result.state=="ok"){
+						alertify.success("删除成功");
+						loadFilterCond();
+						$dataTable.bootstrapTable('refresh');
+					}else{
+						resultErr(result);
+					}
+				}
+			});
+		}, function () {
+		});
+	}
+	//获得左侧栏数据
+	function loadFilterCond(){
+		var filterValue = $("#filterValue").val();
+		$.ajax({
+			type: "post",
+			url: "${ctx}/system/exception/log/loadFilterCond",
+			data:{},
+			dataType: "json",
+			success: function(result){
+				if(result.state=="ok"){
+					var activeStr = "";
+					var filterAllActive = "";
+					if(isNullOrUndefined(filterValue)){
+						filterAllActive = "active";
+					}
+					var str ='<div class="page-aside-section">';
+					str +='	<div class="list-group">'
+							   +'		<a class="list-group-item justify-content-between '+filterAllActive+'" href="javascript:void(0)" id="all" value="null" onclick="_filter(this)">'
+							   +'			<span><i class="fa fa-th" aria-hidden="true"></i> 所有记录 </span>'
+							   +'			<span class="item-right" id="totalNumber">'+result.exception_total+'</span>'
+							   +'		</a>'
+							   +'	</div>'
+							   +'</div>';
+					var exceptionList = result.exceptionList;
+					if(exceptionList != null && exceptionList.length > 0){
+						for(var i = 0; i<exceptionList.length; i++){
+							var exception=exceptionList[i];
+							if(filterValue==exceptionList[i].value){
+								activeStr = 'active';
+							}
+							str +='<a class="list-group-item '+activeStr+'" href="javascript:void(0)" value="'+exception.value+'" onclick="_filter(this)">'
+							   + '	<span class="item-right">'+exception.num+'</span>'
+							   + '	<span class="list-text">'+(i+1)+'. '+exception.name+'</span>'
+							   + '</a>';
+							if(i==exceptionList.length){
+								_html +='	</div>'
+										   + '</div>';
+							}
+						}
+					}
+					$("#filterCondDiv").html(str);
+				}else{
+					alert("左侧数据获取失败");
+				}
+			}
+		});
+	}
+	//状态筛选
+	function _filter(obj){
+		$("#filterCondDiv .active").removeClass("active");
+		$(obj).addClass("active");
+		var filterValue = $(obj).attr("value")=='null'?null:$(obj).attr("value");
+		$("#filterValue").val(filterValue);
+		if($dataTable){
+			$dataTable.bootstrapTable('refresh');
+		}
+	}
+
+</script>
+</body>
+</html>

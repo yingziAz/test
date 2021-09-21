@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 商品详情</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 图表插件 -->
+<link rel="stylesheet" href="${ctx}/assets/vendor/chartist/chartist.css" />
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1_20190516">
+<style type="text/css">
+.name{text-align:right;font-weight:600;font-size:12px}
+.value{text-align:left;}
+</style>
+</head>
+<body class="animsition dashboard page-aside-static page-aside-left">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_PRODUCT" action=""></@admoprt_menu>
+	<div class="page">
+		<div class="page-header">
+			<h1 class="page-title">商品管理</h1>		
+			<div class="page-header-actions">
+				<a class="btn btn-sm btn-inverse btn-round"  href="${ctx}/prod?from=view">
+					<i class="icon wb-reply" aria-hidden="true"></i> 
+					<span class="hidden-sm-down">返回</span>
+				</a>
+			</div>
+		</div>
+		<div class="page-content container-fluid">
+			<div class="row">
+				<div class="col-xxl-3 col-xl-4 col-lg-5 col-sm-5">
+					<div class="panel">
+						<div class="panel-heading">
+							<h4 class="panel-title">商品信息</h4>
+							<div class="panel-actions panel-actions-keep">
+									<div class="dropdown">
+										<a class="panel-action" data-toggle="dropdown" href="#" aria-expanded="true"><i class="icon wb-more-vertical" aria-hidden="true"></i></a>
+										<div class="dropdown-menu dropdown-menu-bullet" role="menu"
+											x-placement="bottom-start" style="position: absolute; transform: translate3d(0px, 38px, 0px); top: 0px; left: 0px; will-change: transform;">
+											<a class="dropdown-item" aria-hidden="true" href="javascript:void(0)"
+												onclick="recalculate()" > 重新计算商品的总利润和库存</a>
+										</div>
+									</div>
+								</div>
+						</div>
+						<div class="panel-body">
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">商品编号</div>
+								<div class="col-sm-8 value">${entity.product_no!'-'}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">商品名称</div>
+								<div class="col-sm-8 value">${entity.product_name!'-'}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">一级分类</div>
+								<div class="col-sm-8 value">${entity.parent_category!'-'}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">二级分类</div>
+								<div class="col-sm-8 value">${entity.child_category!'-'}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">入库价格</div>
+								<div class="col-sm-8 value"><span id="price_span">${entity.price!0}</span>  ${entity.price_unit!}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">出库价格</div>
+								<div class="col-sm-8 value"><span id="out_price_span">${entity.out_price!0}</span>  ${entity.price_unit!}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">库存</div>
+								<div class="col-sm-8 value"><span id="stock_num_span">${entity.stock_num!'-'}</span> ${entity.stock_unit!}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">总利润</div>
+								<div class="col-sm-8 value"><span id="total_profit_span">${entity.total_profit_str!'0'}</span></div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">有效性</div>
+								<div class="col-sm-8 value">${entity.valid_flg_str!'-'}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">创建时间</div>
+								<div class="col-sm-8 value">${entity.create_date!'-'}</div>
+							</div>
+							<div class="row static-info align-reverse">
+								<div class="col-sm-4 name">备注</div>
+								<div class="col-sm-8 value">${entity.product_desc!'-'}</div>
+							</div>
+							<div class="form-group mt-20">
+								<div class="text-center">
+									<button class="btn btn-primary mt-10" onclick="editProd()" >商品编辑</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="col-xxl-9 col-xl-8 col-lg-7 col-sm-7 pl-0">
+					<div class="panel nav-tabs-horizontal" data-plugin="tabs" >
+						<ul class="nav nav-tabs nav-tabs-line" role="tablist">
+							<li class="nav-item" role="presentation">
+								<a	class="nav-link active" data-toggle="tab" href="#stockTab"
+									aria-controls="stockTab" role="tab" aria-selected="true">库存列表</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link" data-toggle="tab" href="#dealiyTab" aria-controls="dealiyTab"
+									role="tab" aria-selected="false"> 每日库存 </a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link" data-toggle="tab" href="#dealiyChartTab" aria-controls="dealiyChartTab"
+									role="tab" aria-selected="false"> 每日库存图表</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link" data-toggle="tab" href="#dealiyPriceChartTab" aria-controls="dealiyPriceChartTab"
+									role="tab" aria-selected="false"> 每日价格图表</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link" data-toggle="tab" href="#dealiyProfitChartTab" aria-controls="dealiyProfitChartTab"
+									role="tab" aria-selected="false"> 每日利润图表</a>
+							</li>
+							<li class="nav-item" role="presentation">
+								<a class="nav-link" data-toggle="tab" href="#productImageTab" aria-controls="#productImageTab"
+									role="tab" aria-selected="false"> 商品附件 </a>
+							</li>
+						</ul>
+						<div class="tab-content">
+							<div class="tab-pane active" id="stockTab" role="tabpanel">
+								<div class="panel-body">
+									<div class="btn-group btn-group-sm" id="stockToolbar" role="group">
+										<button type="button" class="btn btn-outline btn-primary" style="border-radius: 0 0.215rem 0.215rem 0" onclick="stockIn()" >
+											入库
+										</button>
+										&nbsp;&nbsp;
+										<button type="button" class="btn btn-outline btn-primary" style="border-radius: 0 0.215rem 0.215rem 0" onclick="stockOut()" >
+											出库
+										</button>
+										&nbsp;&nbsp;
+										<small>入库或者出库后，左侧库存和利润需要刷新页面才能查看</small>
+									</div>
+									<table id="dataTable" 
+											data-toggle="table" 
+											data-data-field="list" 
+											data-buttons-class="default"
+											data-method="post" 
+											data-url="${ctx}/prod/stock/log/list" 
+											data-side-pagination="server" 
+											data-pagination="true" 
+											data-search="true" 
+											data-striped="true"
+											data-adv-search="false" 
+											data-query-params="queryAdvParams"
+											data-content-type="application/x-www-form-urlencoded"
+											data-mobile-responsive="true"
+											data-toolbar="#stockToolbar" 
+											data-show-refresh="true"
+											data-show-columns="true"
+											data-page-list="[10, 20, 50, 100]"
+											data-page-size = "20"
+											data-cookie="true"
+											data-cookie-id-table="stock_maintain"
+											data-cookie-expire="1m"
+											data-cookies-enabled="bs.table.columns"
+										>
+							 			<thead>
+											<tr>
+												<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+												<th data-field="log_type_str" data-width="70px" data-sortable="true" data-align="center">类型</th>
+												<th data-field="quantity"  data-formatter="stockNumFun" data-sortable="true" data-align="center">数量</th>
+												<th data-field="price" data-formatter="priceFun" data-sortable="true" data-align="right">价格</th>
+												<th data-field="total_price"data-sortable="false" data-align="right">总价</th>
+												<th data-field="description" data-sortable="true" data-align="left">备注</th>
+												<th data-field="create_date"  data-width="150px" data-sortable="true" data-align="center"  data-visible="false">创建时间</th>
+												<th data-width="120px" data-align="center" data-field="action" data-formatter="stockFun" >操作</th>
+											</tr>
+										</thead>
+									</table>
+								</div>
+							</div>
+							<div class="tab-pane active" id="dealiyTab" role="tabpanel">
+								<div class="panel-body">
+									<div class="btn-group btn-group-sm" id="deailyToolbar" role="group">
+										<button type="button" class="btn btn-outline btn-primary" style="border-radius: 0 0.215rem 0.215rem 0" onclick="addDeaily()" >
+											新增
+										</button>
+									</div>
+									<table 	id="deailyDataTable" 
+											data-toggle="table" 
+											data-data-field="list" 
+											data-buttons-class="default"
+											data-method="post" 
+											data-url="${ctx}/prod/deaily/list" 
+											data-side-pagination="server" 
+											data-pagination="true" 
+											data-search="true" 
+											data-striped="true"
+											data-adv-search="false" 
+											data-query-params="queryAdvParams"
+											data-content-type="application/x-www-form-urlencoded"
+											data-mobile-responsive="true"
+											data-toolbar="#deailyToolbar" 
+											data-show-refresh="true"
+											data-show-columns="true"
+											data-page-list="[10, 20, 50, 100]"
+											data-page-size = "20"
+											data-cookie="true"
+											data-cookie-id-table="daily_view_maintain"
+											data-cookie-expire="1m"
+											data-cookies-enabled="bs.table.columns"
+										>
+							 			<thead>
+											<tr>
+												<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+												<th data-field="deaily" data-sortable="true" data-align="center">日期</th>
+												<th data-field="price" data-formatter="priceFun" data-sortable="true" data-align="right">入库价格</th>
+												<th data-field="out_price" data-formatter="priceFun" data-sortable="true" data-align="right">出库价格</th>
+												<th data-field="stock" data-formatter="stockNumFun" data-sortable="true" data-align="center">数量</th>
+												<th data-field="profit" data-sortable="true" data-align="right">每日利润</th>
+												<th data-width="120px" data-align="center" data-field="action" data-formatter="deailFun" >操作</th>
+											</tr>
+										</thead>
+									</table>
+								</div>
+							</div>
+							<div class="tab-pane active" id="productImageTab" role="productImageTab">
+								<div class="panel-body">
+									<div class="row" id="imageAttachViewDiv">
+										<#include "../include/attach_disp.ftl"/>
+										<@attach_disp attaches=prodImages! attachField='productImages' attachDivId='imageAttachViewDiv' attachNum=20 fileType='a' position='b' readonly=true
+										></@attach_disp>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane active" id="dealiyChartTab" role="dealiyChartTab">
+								<div class="panel-body">
+									<div class="h-450 pt-10">
+										<div id="dealiyChartDiv" style="height:100%;width:100%;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane active" id="dealiyPriceChartTab" role="dealiyPriceChartTab">
+								<div class="panel-body">
+									<div class="h-450 pt-10">
+										<div id="dealiyPriceChartDiv" style="height:100%;width:100%;"></div>
+									</div>
+								</div>
+							</div>
+							<div class="tab-pane active" id="dealiyProfitChartTab" role="dealiyProfitChartTab">
+								<div class="panel-body">
+									<div class="h-450 pt-10">
+										<div id="dealiyProfitChartDiv" style="height:100%;width:100%;"></div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_191028"></script>
+	<script src="${ctx}/assets/plugin/echarts/3.8.5/echarts.min.js?v=3.8.3"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		var $deailyDataTable = $('#deailyDataTable');
+		var priceUnit = '${entity.price_unit!}';
+		var stockUnit = '${entity.stock_unit!}';
+		$(document).ready(function(){
+			registerAlertify4Local();
+			initDealiyChartTrendChart();
+			initDealiyPriceChartTrendChart();
+			initDealiyProfitChartTrendChart();
+			renderTrendData();
+			$(".tab-content .active").removeClass("active");
+			$("#stockTab").addClass("active");
+		});
+		
+		function serialNumGen(value, row, index){
+			return index+1;
+		}
+		
+		function priceFun(value,row,index){
+			if(isNullOrUndefined(priceUnit)){
+				return value;
+			}
+			if(isNullOrUndefined(value)){
+				value="0";
+			}
+			return 	value +" "+priceUnit;
+		}
+		function stockNumFun(value,row,index){
+			if(isNullOrUndefined(stockUnit)){
+				return value;
+			}
+			if(isNullOrUndefined(value)){
+			  value="0";
+			}
+			return 	value +" "+stockUnit;
+		}
+		
+		//高级查询
+		function queryAdvParams(options){
+			return jQuery.extend(options,{
+				prodId : "${entity.id}"
+			});
+		}
+		
+		//刷新页面
+		function refreshView(){
+			$.ajax({
+				type: "post",
+				url: "${ctx}/prod/refreshView",
+				data: {"id":'${entity.id}'},
+				dataType: "json",
+				success: function(result){
+					var data = result.data;
+					$("#price_span").html(data.price);
+					$("#out_price_span").html(data.out_price);
+					$("#stock_num_span").html(data.stock_num);
+					$("#total_profit_span").html(data.total_profit_str);
+					$deailyDataTable.bootstrapTable('refresh');
+					renderTrendData();
+				}
+			});
+		}
+		
+		//重新计算总利润和库存
+		function recalculate(){
+			alertify.confirm("确定重新计算库存和总利润吗？", function () {
+				showAjaxLoading();
+				$.ajax({
+					type: "post",
+					url: "${ctx}/prod/stock/log/recalculate",
+					data: {"prodId":'${entity.id}'},
+					dataType: "json",
+					success: function(result){
+						hideAjaxLoading();
+						if(result.state=="ok"){
+							alertify.success("重新计算成功");
+							refreshView();
+						}else{
+							resultErr(result);
+						}
+					}
+				});
+			}, function () {
+//	 			alertify.error("取消");
+			});
+		}
+		
+		//库存操作
+		function stockFun(value,row,index){
+			var _view = "", _edit="";
+			_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/stock/log/edit?id='+row.id+'"  onclick="modal(event,this)">编辑</a>';
+			_view = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/stock/log/view?id='+row.id+'"  onclick="modal(event,this)" >详情</a>';
+			return _edit+_view;
+		}
+		
+		//商品每日记录操作
+		function deailFun(value,row,index){
+			var  _edit="";
+			_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/deaily/edit?id='+row.id+'"  onclick="modal(event,this)" >编辑</a>';
+			return _edit;
+		}
+		
+		//入库
+		function stockIn(){
+			modalHref("${ctx}/prod/stock/log/edit?logType=1&prodId=${entity.id}","ajaxModal");
+		}
+		
+		//出库
+		function stockOut(){
+			modalHref("${ctx}/prod/stock/log/edit?logType=2&prodId=${entity.id}","ajaxModal");
+		}
+		
+		//商品编辑
+		function editProd(){
+			modalHref("${ctx}/prod/edit?id=${entity.id}","ajaxModal");
+		}
+		
+		//每日商品
+		function addDeaily(){
+			modalHref("${ctx}/prod/deaily/edit?prodId=${entity.id}","ajaxModal");
+		}
+		
+		function initDealiyChartTrendChart(){
+			dealiyChartTrendChart = echarts.init(document.getElementById("dealiyChartDiv"));
+			option = {
+				color: ['#007bff'],
+				tooltip: {
+					trigger: 'axis'
+				},
+				legend: {
+					data:['库存数量']
+				},
+				grid: {
+					top: '10%',
+					left: '5%',
+					right: '5%',
+					bottom: '5%',
+					containLabel: true
+				},
+				toolbox: {
+						show: true,
+						feature: {
+							dataZoom: {
+								yAxisIndex: 'none'
+							},
+							dataView: {readOnly: false},
+							magicType: {type: ['line', 'bar']},
+							restore: {},
+							saveAsImage: {}
+						}
+					},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					data: [],
+					axisLabel: {rotate: 20, interval: 0}
+				},
+				yAxis: {
+					type: 'value'
+				},
+				series: [
+				]
+			};
+			dealiyChartTrendChart.setOption(option);
+		}
+		function initDealiyProfitChartTrendChart(){
+			dealiyProfitChartTrendChart = echarts.init(document.getElementById("dealiyProfitChartDiv"));
+			option = {
+				color: ['#007bff'],
+				tooltip: {
+					trigger: 'axis'
+				},
+				legend: {
+					data:['利润']
+				},
+				grid: {
+					top: '10%',
+					left: '5%',
+					right: '5%',
+					bottom: '5%',
+					containLabel: true
+				},
+				toolbox: {
+						show: true,
+						feature: {
+							dataZoom: {
+								yAxisIndex: 'none'
+							},
+							dataView: {readOnly: false},
+							magicType: {type: ['line', 'bar']},
+							restore: {},
+							saveAsImage: {}
+						}
+					},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					data: [],
+					axisLabel: {rotate: 20, interval: 0}
+				},
+				yAxis: {
+					type: 'value'
+				},
+				series: [
+				]
+			};
+			dealiyProfitChartTrendChart.setOption(option);
+		}
+		
+		function initDealiyPriceChartTrendChart(){
+			dealiyChartPriceTrendChart = echarts.init(document.getElementById("dealiyPriceChartDiv"));
+			option = {
+				color: ['#007bff','#526069'],
+				tooltip: {
+					trigger: 'axis'
+				},
+				legend: {
+					data:['入库价格','出库价格']
+				},
+				grid: {
+					top: '10%',
+					left: '5%',
+					right: '5%',
+					bottom: '5%',
+					containLabel: true
+				},
+				toolbox: {
+						show: true,
+						feature: {
+							dataZoom: {
+								yAxisIndex: 'none'
+							},
+							dataView: {readOnly: false},
+							magicType: {type: ['line', 'bar']},
+							restore: {},
+							saveAsImage: {}
+						}
+					},
+				xAxis: {
+					type: 'category',
+					boundaryGap: false,
+					data: [],
+					axisLabel: {rotate: 20, interval: 0}
+				},
+				yAxis: {
+					type: 'value'
+				},
+				series: [
+				]
+			};
+			dealiyChartPriceTrendChart.setOption(option);
+		}
+
+		function renderTrendData(){
+			$.ajax({
+				url : "${ctx}/prod/deaily",
+				type : 'POST',
+				data : {prodId:'${entity.id!}'},
+				dataType : "json",
+				success : function(result) {
+					if (result.state == "ok") {
+						var _data = result.data;
+						dealiyChartTrendChart.setOption({
+							xAxis: [
+								{
+									data: _data.xData
+								}
+							],
+							series: [
+								{
+									name:'库存数量',
+									type:'line',
+									data:_data.line1Data
+								},
+							]
+						});
+						dealiyChartPriceTrendChart.setOption({
+							xAxis: [
+								{
+									data: _data.xData
+								}
+							],
+							series: [
+								{
+									name:'入库价格',
+									type:'line',
+									data:_data.line2Data
+								},
+								{
+									name:'出库价格',
+									type:'line',
+									data:_data.line3Data
+								}
+							]
+						});
+						dealiyProfitChartTrendChart.setOption({
+							xAxis: [
+								{
+									data: _data.xData
+								}
+							],
+							series: [
+								{
+									name:'利润',
+									type:'line',
+									data:_data.line4Data
+								}
+								
+							]
+						});
+					} else {
+						resultErr(result);
+					}
+				}
+			});
+		}
+		
+
+	</script>
+</body>
+</html>

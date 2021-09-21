@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | 商品管理</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1_20190516">
+</head>
+<body class="animsition  page-aside-static page-aside-left">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_PRODUCT" action=""></@admoprt_menu>
+	<div class="page">
+		<!-- Contacts Content Header -->
+		<div class="page-header">
+			<h1 class="page-title">商品管理</h1>		
+			<ol class="breadcrumb">
+				<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+			</ol>
+		</div>
+		<!--Content -->
+		<div class="page-content container-fluid">
+			<div class="panel nav-tabs-horizontal">
+				<#include "../include/common_warning.ftl" />
+				<div class="panel-body p-10">
+					<div class="btn-group btn-group-sm" id="toolbar" role="group">
+						<button type="button" class="btn btn-outline btn-primary" style="border-radius: 0 0.215rem 0.215rem 0" onclick="_download()" >
+							<i class="icon wb-download" aria-hidden="true"></i>Excel 导出
+						</button>
+					</div>
+					<table 	id="dataTable" 
+							data-toggle="table" 
+							data-data-field="list" 
+							data-buttons-class="default"
+							data-method="post" 
+							data-url="${ctx}/prod/list" 
+							data-side-pagination="server" 
+							data-pagination="true" 
+							data-search="true" 
+							data-striped="true"
+							data-adv-search="false" 
+							data-query-params="queryAdvParams"
+							data-content-type="application/x-www-form-urlencoded"
+							data-mobile-responsive="true"
+							data-toolbar="#toolbar" 
+							data-show-refresh="true"
+							data-show-columns="true"
+							data-page-list="[10, 20, 50, 100]"
+							data-page-size = " ${cond.pageSize!20}"
+							<#if (cond.keyword!'') != ''>
+							data-search-text="${cond.keyword!''}"
+							</#if>
+							<#if (cond.pageNo!-1) !=-1>
+							data-page-number = ${cond.pageNo!0}
+							</#if>
+							<#if (cond.orderField!'') != '' && (cond.orderDir!'') !=''>
+							data-sort-name = "${cond.orderField!''}"
+							data-sort-order = "${cond.orderDir!''}"
+							</#if>
+							data-cookie="true"
+							data-cookie-id-table="oprt_prod_maintain"
+							data-cookie-expire="1m"
+							data-cookies-enabled="bs.table.columns"
+						>
+			 			<thead>
+							<tr>
+								<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+								<th data-field="product_no" data-width="70px" data-sortable="true" data-align="center">商品编号</th>
+								<th data-field="product_name" data-sortable="true" data-align="center">商品名称</th>
+								<th data-field="parent_category" data-sortable="true" data-align="center">一级分类</th>
+								<th data-field="child_category" data-sortable="true" data-align="center">二级分类</th>
+								<th data-field="product_cover" data-width="70px" data-formatter="coverHeadImg" data-align="center">商品封面图</th>
+								<th data-field="price" data-formatter="priceFun"  data-width="100px" data-sortable="false" data-align="center">入库价格</th>
+								<th data-field="out_price" data-formatter="priceFun"  data-width="100px" data-sortable="false" data-align="center">出库价格</th>
+								<th data-field="stock_num"  data-formatter="stockNumFun" data-width="100px" data-sortable="true" data-align="center">库存</th>
+								<th data-field="total_profit_str" data-width="100px" data-sortable="false" data-align="right">总利润</th>
+								<th data-field="product_desc" data-sortable="true" data-align="left" data-visible="false">商品描述</th>
+								<th data-field="valid_flg_str" data-sortable="true" data-align="center" data-visible="false">有效性</th>
+								<th data-field="create_date"  data-width="150px" data-sortable="true" data-align="center"  data-visible="false">创建时间</th>
+								<th data-field="update_date"  data-width="150px" data-sortable="true" data-align="center" data-visible="false">更新时间</th>
+								<th data-width="260px" data-align="center" data-field="action" data-formatter="actionFormatter" data-events="actionEvents">操作</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			 </div>
+		 </div>
+	</div>
+	<!-- TABLE CONTENT END -->
+	<!-- Footer -->
+	<div class="site-action">
+		<a href="${ctx}/prod/edit" onclick="modal(event,this)">
+			<button type="button" class="site-action-toggle btn-raised btn btn-success btn-floating">
+				<i class="front-icon wb-plus animation-scale-up" aria-hidden="true"></i>
+			</button>
+		</a>
+	</div>
+<#include "../include/page-footer.html"/>
+<#include "../include/page-js-plugins.html"/>
+<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_191028"></script>
+<script type="text/javascript">
+	var $dataTable = $('#dataTable');
+	$(document).ready(function(){
+		registerAlertify4Local();
+	});
+	
+	//高级查询
+	function queryAdvParams(options) {
+		return jQuery.extend(options, {
+			filterValue :""
+		});
+	}
+	
+	$dataTable.bootstrapTable({
+		onLoadSuccess: function(data) {
+			imgShow();
+		}
+	});
+	
+	function serialNumGen(value,row,index){
+		return 	index+1;
+	}
+	function priceFun(value,row,index){
+		if(isNullOrUndefined(row.price_unit)){
+			return value;
+		}
+		return 	value +" "+row.price_unit;
+	}
+	function stockNumFun(value,row,index){
+		if(isNullOrUndefined(row.stock_unit)){
+			return value;
+		}
+		return 	value +" "+row.stock_unit;
+	}
+	
+	//操作
+	function actionFormatter(value,row,index){
+		var _view = "", _disable="",_edit="",_copy="",_stockIn="",_stockOut="";
+		_view = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/view?id='+row.id+'" >详情</a>';
+		if(row.valid_flg == "Y"){
+			_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/edit?id='+row.id+'"  onclick="modal(event,this)" >编辑</a>';
+			_copy = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/copy?id='+row.id+'"  onclick="modal(event,this)">复制</a>';
+			_stockIn = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/prod/stock/log/edit?logType=1&prodId='+row.id+'"  onclick="modal(event,this)">入库</a>';
+			_stockOut = '<a class="btn btn-link btn-xs text-primary"href="${ctx}/prod/stock/log/edit?logType=2&prodId='+row.id+'" onclick="modal(event,this)">出库</a>';
+			_disable = '<a class="btn btn-link btn-xs text-danger" onclick="disableOrEnable(\''+row.id+'\',\'N\',\''+row.product_name+'\')">注销</a>'; 
+		}else if(row.valid_flg == "N" ){
+			_disable = '<a class="btn btn-link btn-xs text-info" onclick="disableOrEnable(\''+row.id+'\',\'Y\',\''+row.product_name+'\')">激活</a>'; 
+		}
+		return _edit+_copy+_view+_stockIn+_stockOut+_disable;
+	}
+	
+	//注销/激活操作
+	function disableOrEnable(id,valid_flg,typeCn){
+		var msg = "确认注销商品【"+typeCn+"】吗？";
+		if("Y" == valid_flg){
+			msg = "确认激活商品【"+typeCn+"】吗？";
+		}
+		alertify.confirm(msg, function () {
+			$.ajax({
+				type: "post",
+				url: "${ctx}/prod/validUpdate",
+				data: {"id":id,"validFlg":valid_flg},
+				dataType: "json",
+				success: function(result){
+					if(result.state=="ok"){
+						alertify.success("操作成功");
+						$dataTable.bootstrapTable('refresh');
+					}else{
+						resultErr(result);
+					}
+				}
+			});
+		}, function () {
+// 			alertify.error("取消");
+		});
+	}
+	
+	function coverHeadImg(value,row,index){
+		var	_url = '';
+		if(row.product_cover != null && row.product_cover!= '')   {
+			var imgUrl = "${ctx}/attach/download?attachId="+row.product_cover;
+			_url = '<img class="gallery-items" style="height:50px; width:50px;" src="'+imgUrl+'" data-high-res-src="'+imgUrl+'"/>'; 
+		}
+		return _url;
+	}
+	//excel 导出
+	function _download(){
+		window.open('${ctx}/prod/download'); 
+	}
+</script>
+</body>
+</html>

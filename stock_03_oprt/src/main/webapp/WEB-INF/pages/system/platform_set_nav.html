@@ -1,0 +1,13 @@
+<ul class="nav nav-tabs nav-tabs-line pt-5">
+	<li class="nav-item">
+		<a class="nav-link <#if (nav_active!'') == 'config'>active</#if>" href="${ctx}/system/globalConfig">平台参数</a>
+	</li>
+	<#if false>
+	<li class="nav-item">
+		<a class="nav-link <#if (nav_active!'') == 'dict'>active</#if>" href="${ctx}/system/dict">系统字典</a>
+	</li>
+	</#if>
+	<li class="nav-item">
+		<a class="nav-link <#if (nav_active!'') == 'account'>active</#if>" href="${ctx}/oprt/account">运营账户</a>
+	</li>
+</ul>

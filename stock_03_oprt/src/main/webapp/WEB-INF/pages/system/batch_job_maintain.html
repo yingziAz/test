@@ -1,0 +1,83 @@
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+<div class="modal-dialog modal-simple" style="max-width:800px">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" aria-hidden="true"
+				data-dismiss="modal">×</button>
+			<h4 class="modal-title">手动跑批</h4>
+		</div>
+		<div class="modal-body">
+			<table id="dataTable" 
+				data-toggle="table"
+				data-buttons-class="default"
+				data-content-type="application/x-www-form-urlencoded"
+				data-url="${ctx}/system/batchLog/list4Quartz"
+				data-side-pagination="server" 
+				data-search="true"
+				data-adv-search="false" 
+				data-query-params="queryAdvParams"
+				data-show-refresh="true" 
+				data-mobile-responsive="true"
+				data-striped="true" 
+				data-data-field="list" 
+				data-method="post"
+				data-pagination="true" 
+				data-show-columns="false"
+				data-page-size="20"
+				data-page-list="[10, 20, 50, 100]">
+				<thead>
+					<tr>
+						<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+						<th data-width="180px"  data-field="jobName" data-sortable="true" data-align="left">跑批任务</th>
+						<th data-field="jobDesc" data-sortable="true" data-align="left">备注</th>
+						<th data-width="80px" data-align="center" data-field="action" data-formatter="actionFormatter" data-events="actionEvents">操作</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.js?v=1.21.1"></script>
+<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+
+<script type="text/javascript">
+	$(document).ready(function() {
+		//弹框初始化
+		registerAlertify4Local();
+		$('#ajaxModal').on('hidden.bs.modal', function(e) {
+			//清除modal内容
+			$("#ajaxModal").remove();
+		})
+	});
+
+	function actionFormatter(value, row, index) {
+		var actionStr = '<a class="btn btn-link btn-xs text-primary" href="javascript:" onclick="_action(\''
+				+ row.id + '\')" >点击执行</a> ';
+		return actionStr;
+	}
+	//跑批操作
+	function _action(id) {
+		alertify.confirm("确定要执行该跑批任务吗？", function () {
+			$.ajax({
+				type: "post",
+				url : "${ctx}/system/batchLog/batchQuartz",
+				data : {
+					"id" : id
+				},
+				dataType: "json",
+				success: function(result){
+					if(result.state=="ok"){
+						alertify.success("跑批成功");
+						parent.$('#dataTable').bootstrapTable('refresh');
+						//关闭当前弹出框
+						closeModal('ajaxModal');
+					}else{
+						resultErr(result);
+					}
+				}
+			});
+		}, function () {
+		});
+	}
+
+</script>

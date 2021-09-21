@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<title>${global.platform_name!''} | APP版本维护</title>
+<#include "../include/page-header-meta.html"/>
+<#include "../include/page-header-common-css.html"/>
+<!-- 表格插件 -->
+<link rel="stylesheet" href="${ctx}/assets/plugin/bootstrap-table/bootstrap-table${global.assets_min}.css?v=1.21.1">
+</head>
+<body class="animsition dashboard page-aside-static page-aside-left">
+	<#include "../include/page-header.html"/>
+	<#include "../include/page-sidebar-wrapper.html"/>
+	<@admoprt_menu type="F_O_OPRT_MAG" action="P_APP_VERSION_MAINTAIN"></@admoprt_menu>
+	<div class="page">
+		<!-- Contacts Content -->
+		<div class="page-main">
+			<!-- Contacts Content Header -->
+			<div class="row"></div>
+			<div class="page-header">
+				<h1 class="page-title">APP版本列表</h1>
+				<ol class="breadcrumb">
+					<li class="breadcrumb-item"><a href="${ctx}/home">首页</a></li>
+					<li class="breadcrumb-item">系统管理</li>
+				</ol>
+			</div>
+			<!--Content -->
+			<div class="page-content container-fluid">
+				<div class="panel">
+					<#include "./version_log_nav.html" />
+					<div class="panel-body p-10">
+						<div id="contactsContent" class="page-content page-content-table" data-plugin="selectable">
+							<table 	id="dataTable" 
+									data-toggle="table" 
+									data-data-field="list" 
+									data-buttons-class="default"
+									data-method="post" 
+									data-pagination="true" 
+									data-url="${ctx}/system/app/version/list" 
+									data-side-pagination="server" 
+									data-search="true" 
+									<#if (cond.keyword!'') != ''>
+										data-search-text="${cond.keyword!''}"
+									</#if>
+									<#if (cond.pageNo!-1) !=-1>
+									data-page-number = ${cond.pageNo!0}
+									</#if>
+									data-adv-search="false" 
+									data-query-params="queryAdvParams"
+									data-content-type="application/x-www-form-urlencoded"
+									data-toolbar = "#toolbar"
+									data-show-refresh="true"
+									data-mobile-responsive="true"
+									data-show-columns="true"
+									data-striped="true"
+									data-page-size="${cond.pageSize!20}"
+									data-page-list="[10, 20, 50, 100]"
+									<#if (cond.orderField!'') != '' && (cond.orderDir!'') !=''>
+									data-sort-name = "${cond.orderField!''}"
+									data-sort-order = "${cond.orderDir!''}"
+									</#if>
+									data-cookie="true"
+									data-cookie-id-table="app_version_log_maintain"
+									data-cookie-expire="1m"
+									data-cookies-enabled="bs.table.columns"
+									>
+								<thead>
+									<tr>
+										<th data-width="30px" data-formatter="serialNumGen" data-align="center">#</th>
+										<th data-width="80px" data-field="appTypeDisp" data-sortable="true" data-align="center">类型</th>
+										<th data-width="80px" data-field="appVersionCode" data-sortable="true" data-align="center">版本号</th>
+										<th data-width="80px" data-field="appVersion" data-sortable="true" data-align="center">版本</th>
+										<th data-width="80px" data-field="releaseDate4Str" data-sortable="true" data-align="center">发布日期</th>
+										<th data-field="appUpdateContent" data-align="left">APP升级内容</th>
+										<th data-field="createDate4Str" data-sortable="true" data-align="center" data-visible="false">创建时间</th>
+										<th data-field="updateDate4Str" data-sortable="true" data-align="center" data-visible="false">更新时间</th>
+										<th data-width="100px"  data-field="action" data-formatter="actionFormatter" data-align="center">操作</th>
+									</tr>
+								</thead>
+							</table>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- TABLE CONTENT END -->
+	<!-- Site Action -->
+	<div class="site-action" data-plugin="actionBtn">
+		<a href="${ctx}/system/app/version/edit" onclick="modal(event,this)" style="color: #FFFFFF" data-content="Hello">
+			<button type="button" class="site-action-toggle btn-raised btn btn-success btn-floating" data-toggle="tooltip" data-placement="left" data-original-title="添加版本">
+				<i class="front-icon wb-plus animation-scale-up" aria-hidden="true"></i>
+			</button>
+		</a>
+	</div>
+	<!-- End Site Action -->
+	
+	<!-- Footer -->
+	<#include "../include/page-footer.html"/>
+
+	<#include "../include/page-js-plugins.html"/>
+	<script src="${ctx}/assets/plugin/bootstrap-table/bootstrap-table.min.js"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/locale/bootstrap-table-zh-CN.js?v=1.21.1"></script>
+	<script src="${ctx}/assets/plugin/bootstrap-table/extensions/cookie/bootstrap-table-cookie.js?v=1.23.1_190611"></script>
+	<script type="text/javascript">
+		var $dataTable = $('#dataTable');
+		$(document).ready(function(){
+			//调整表格高度
+			//resetBootstrapTableHeight();
+			//注册表格可调整大小的事件
+			//registerBootstrapTableResizeWithHeightEvent();
+			//弹框初始化
+			registerAlertify4Local();
+		});
+
+		//高级查询
+		function queryAdvParams(options) {
+			return jQuery.extend(options, {
+				
+			});
+		}
+		
+		function serialNumGen(value,row,index){
+			return index+1;
+		}
+
+		//操作
+		function actionFormatter(value,row,index){
+			var _edit = '';
+			var _del = '';
+			_edit = '<a class="btn btn-link btn-xs text-primary" href="${ctx}/system/app/version/edit?id='+row.id+'" onclick="modal(event,this)">编辑</a>';
+			_del = '<a class="btn btn-link btn-xs text-primary" onclick="_del(\''+row.id+'\')">删除</a>'; 
+			return _edit + _del;
+		}
+		
+		//删除版本信息
+		function _del(id){
+			alertify.confirm("确认删除该条APP版本信息吗？删除后不可恢复", function () {
+				$.ajax({
+					type: "post",
+					url: "${ctx}/system/app/version/psclDel",
+					data: {"id":id},
+					dataType: "json",
+					success: function(result){
+						if(result.state=="ok"){
+							alertify.success("操作成功");
+							if ($dataTable) {
+								$dataTable.bootstrapTable('refresh');
+							}
+						}else{
+							resultErr(result);
+						}
+					}
+				});
+			}, function () {
+			});
+		}
+
+	</script>
+</body>
+</html>

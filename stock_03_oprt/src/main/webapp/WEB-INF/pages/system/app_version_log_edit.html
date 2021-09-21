@@ -1,0 +1,233 @@
+<link rel="stylesheet" href="${ctx}/assets/vendor/formvalidation/formValidation.min.css?v=v0.8.1">
+<link href="${ctx}/assets/vendor/bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css?v=v0.8.1" rel="stylesheet" type="text/css" />
+<div class="modal-dialog modal-simple">
+	<form class="form-horizontal" method="post" role="form" id="dataForm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" aria-hidden="true" id="btnClose" data-dismiss="modal">×</button>
+				<h4 class="modal-title">APP版本<#if entity.id??>编辑<#else>新增</#if></h4>
+			</div>
+			<div class="modal-body">
+				<!-- 防止重复提交TOKEN  begin-->
+				${token!''}
+				<input type="hidden" name="formTokenSuffix" value="${formTokenSuffix!''}" />
+				<input type="hidden" name="entity.id" value="${entity.id!''}" />
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">app类型：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<div class="radio-custom radio-default radio-inline">
+							<input type="radio" id="type_android" name="entity.appType" value="1" 
+							<#if entity.appType?? && entity.appType == 1>checked="checked"</#if>> <label for="type_android">Android</label>
+						</div>
+						<div class="radio-custom radio-default radio-inline">
+							<input type="radio" id="type_ios" name="entity.appType" value="2"
+							<#if entity.appType?? && entity.appType == 2>checked="checked"</#if>> <label for="type_ios">IOS</label>
+						</div>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">app版本号：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<input type="text" value="${entity.appVersionCode!''}" class="form-control" name="entity.appVersionCode" placeholder="请输入app版本号" maxlength="10"/>
+						<small>注：APP版本号为APPconfig.xml中的版本号</small>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">app版本名称：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<input type="text" value="${entity.appVersion!''}" class="form-control" name="entity.appVersion" placeholder="请输入app版本名称" maxlength="40"/>
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">发布时间：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<div class="input-group">
+							<span class="input-group-addon">
+								<span class="wb-time"></span>
+							</span>
+							<input type="text" id="releaseDate" class="form-control datetime" data-autoclose="true" autocomplete="off" name="entity.releaseDate" value="${entity.releaseDate!''}">
+						</div>
+					</div>
+				</div>
+				<div class="form-group row" id="appAttachDiv">
+					<label class="col-md-3 control-label text-right">apk附件：<span class="required" style="color: red;">*</span></label>
+					<input type="hidden" id="attachId" class="form-control" name="entity.appAttach" value="${entity.appAttach!''}" />
+					<div class="col-md-8 mr-20" id="attachDiv">
+						<#include "../include/attach_disp.ftl"/>
+						<@attach_disp attaches=attaches! attachField='attachId' attachDivId='attachDiv' attachNum=1 fileType='a' position='m' readonly=false></@attach_disp> 
+					</div>
+				</div>
+				<div class="form-group row">
+					<label class="col-md-3 form-control-label" for="name">app升级内容：
+						<span class="required" style="color: red;">*</span>
+					</label>
+					<div class="col-md-8">
+						<textarea class="form-control" name="entity.appUpdateContent" placeholder="请输入app该版本的升级内容" rows="6" maxlength="2000">${entity.appUpdateContent!''}</textarea>
+					</div>
+				</div>
+			</div>
+			<div class="modal-footer">
+				<button class="btn btn-primary" type="submit" id="btnSubmit"> <i class="fa fa-save"></i> 保存</button>
+				<a class="btn btn-sm btn-white" data-dismiss="modal" href="javascript:void(0)">取消</a>
+			</div>
+		</div>
+	</form>
+</div>
+
+<script src="${ctx}/assets/vendor/formvalidation/formValidation.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/formvalidation/framework/bootstrap4.min.js?v=v0.8.1"></script>
+<script src="${ctx}/assets/vendor/bootstrap-datetimepicker/bootstrap-datetimepicker.min.js?v=v0.8.1" type="text/javascript"></script>
+<script src="${ctx}/assets/vendor/bootstrap-datetimepicker/locales/bootstrap-datetimepicker.zh-CN.js?v=v0.8.1" type="text/javascript"></script>
+
+<script type="text/javascript">
+
+$(document).ready(function() {
+	registerDataFormValidate();
+	registerAlertify4Local();
+	$('#ajaxModal').on('hidden.bs.modal', function (e) {
+		//清除modal内容
+		$("#ajaxModal").remove();
+	})
+	//设置日期格式
+	$(".datetime").datetimepicker({
+		language: 'zh-CN',
+		format: 'yyyy-mm-dd hh:ii',
+		autoclose: true,
+		minView:1
+	}).on('changeDate',function(ev){
+		$("#releaseDate").trigger("change");
+	});
+	$('.datetime').datetimepicker('setStartDate',new Date());
+	
+	<#if entity.appType?? && entity.appType == 2>
+		$("#appAttachDiv").hide();
+	</#if>
+	$('input[name="entity.appType"]').each(function(){
+		$(this).click(function(){
+			if($(this).val() == 2){
+				$("#appAttachDiv").hide();
+				$("#attachId").val("");
+			}else{
+				$("#appAttachDiv").show();
+			}
+			$('#dataForm').data('formValidation').resetForm();
+		});
+	});
+});
+
+//提交信息验证
+function registerDataFormValidate() {
+	$('#dataForm').formValidation({
+		framework : "bootstrap4",
+		excluded: [],
+		button : {
+			selector : '#btnSubmit',
+			disabled : 'disabled'
+		},
+		icon : null,
+		fields : {
+			"entity.appType" : {
+				validators : {
+					notEmpty : {
+						message : '请选择app类型'
+					}
+				}
+			},
+ 			"entity.appVersionCode" : {
+				validators : {
+					notEmpty : {
+						message : '请输入app版本号'
+					}
+				}
+			},
+ 			"entity.appVersion" : {
+				validators : {
+					notEmpty : {
+						message : '请输入app版本名称'
+					}
+				}
+			},
+ 			"entity.releaseDate" : {
+ 				trigger:"change",
+				validators : {
+					notEmpty : {
+						message : '请选择app发布时间'
+					}
+				}
+			},
+ 			"entity.appUpdateContent" : {
+				validators : {
+					notEmpty : {
+						message : '请输入app升级内容'
+					}
+				}
+			},
+			"entity.appAttach" : {
+				validators : {
+					callback: {
+						message: '请输入apk附件',
+						callback: function(value, validator) {
+							if($('input[name="entity.appType"]:checked').val() == 1  && isNullOrUndefined(value)){
+								return false;
+							}else{
+								return true;
+							}
+						}
+					}
+				}
+			},
+		},
+		err : {
+			clazz : 'invalid-feedback'
+		},
+		control : {
+			valid : 'is-valid',
+			invalid : 'is-invalid'
+		},
+		row : {
+			invalid : 'has-danger'
+		}
+	}).on('success.form.fv',function(e){
+		e.preventDefault();
+		var $form = $(e.target),
+			fv = $(e.target).data('formValidation');
+		$.ajax({
+			url :"${ctx}/system/app/version/saveOrUpdate",
+			type : 'POST',
+			data : $form.serialize(),
+			dataType : "json",
+			success: function(result){
+				e.stopPropagation();
+				if(result.state == "ok"){
+					alertify.success("保存成功");
+					setTimeout(function(){
+					 	closeModal('ajaxModal');
+					 	parent.$('#dataTable').bootstrapTable('refresh'); 
+					},1000)
+				}else{
+					//加入token问题
+					if(result.formToken){
+						$("input[name ='formToken"+$("input[name ='formTokenSuffix']").val()+"']").val(result.formToken);
+					}
+					resultErr(result);
+				}
+			}
+		});
+	});
+}
+
+//上传附件回调方法，重新验证附件
+function uploadSuccess(attachId){
+	$('#dataForm').data('formValidation').resetField("entity.appAttach");
+	$('#dataForm').data('formValidation').validateField("entity.appAttach");
+}
+
+</script>
